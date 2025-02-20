@@ -22,11 +22,14 @@ devtools::install_github('PiotrTymoszuk/trafo')
 ## script sourcing
 devtools::install_github('PiotrTymoszuk/soucer') 
 
-## exploratory data analysis and staristical hypothesis testing
+## exploratory data analysis and statistical hypothesis testing
 devtools::install_github('PiotrTymoszuk/ExDA') 
 devtools::install_github('PiotrTymoszuk/fastTest')
 devtools::install_github('PiotrTymoszuk/microViz')
 devtools::install_github('PiotrTymoszuk/clustTools')
+
+## network analyses
+devtools::install_github('PiotrTymoszuk/graphExtra')
 
 ## management of figures and tables in Rmd documents
 devtools::install_github('PiotrTymoszuk/figur')
