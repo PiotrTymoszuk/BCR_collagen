@@ -214,6 +214,7 @@
                   x = 'BCR-free survival, months') + 
              globals$common_theme + 
              theme(plot.title = element_markdown(), 
+                   plot.title.position = 'plot', 
                    plot.tag = element_blank()) + 
              annotate('text',
                       label = v, 

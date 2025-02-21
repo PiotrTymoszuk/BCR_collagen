@@ -84,21 +84,14 @@
   insert_msg('GBM, the cohort confounder')
   
   suppl_fig$gbm_cohort <- 
-    plot_grid(surv_cohort$forest_plot, 
-              surv_cohort$stat_plot + 
-                 theme(legend.position = 'right') + 
-                 labs(subtitle = 'model performance'), 
-              nrow = 2, 
-              rel_heights = c(1.3, 1), 
-              labels = LETTERS, 
-              label_size = 10) %>% 
+    surv_cohort$forest_plot %>% 
     as_figure(label = 'bcr_survival_gbm_model_cohort_confounder_pooled_geo', 
               ref_name = 'gbm_cohort', 
               caption = paste('Investigation of confounding effect of the', 
                               'cohort on prediction of BCR-free survival', 
                               'by the GBM model in the pooled GEO cohort.'), 
               w = 140, 
-              h = 180)
+              h = 110)
   
 # GBM models: clinical and combined ones --------
   
@@ -182,7 +175,7 @@
               ref_name = 'cl_plot', 
               caption = paste('GBM modeling of BCR-free survival in PCA with', 
                               'clinical prediction and expression of', 
-                              'collagen-related tramscripts:', 
+                              'collagen-related transcripts:', 
                               'survival in tertiles of predictor scores.'), 
               w = 180, 
               h = 220)

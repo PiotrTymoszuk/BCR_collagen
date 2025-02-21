@@ -196,7 +196,7 @@
       training = 'indianred3')
   
   globals$algo_labels <- 
-    c(ridge = 'Ridge Cox', 
+    c(ridge = 'RIDGE Cox', 
       elnet = 'Elastic Net Cox', 
       lasso = 'LASSO Cox', 
       svm = 'SVM', 
@@ -239,7 +239,7 @@
   globals$cohort_model_labels <- 
     c(cohort = 'cohort', 
       gbm_score = 'GBM predictor', 
-      full = 'GBM predictor + cohort')
+      full = 'GBM predictor + data set')
 
 # END -----
   

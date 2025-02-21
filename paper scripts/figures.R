@@ -67,7 +67,7 @@
           theme(plot.subtitle = element_blank(), 
                 legend.position = 'bottom', 
                 legend.title = element_blank(), 
-                legend.text = element_text(size = 6))) %>% 
+                legend.text = element_text(size = 7))) %>% 
     plot_grid(plotlist = ., 
               ncol = 3, 
               align = 'hv', 
@@ -75,7 +75,7 @@
   
   fig$ml_mrna$bottom <- surv_plots$importance_plots$gbm + 
     guides(x = guide_axis(angle = 45)) + 
-    theme(axis.text.x = element_markdown(size = 7), 
+    theme(axis.text.x = element_markdown(size = 6.5), 
           strip.background.y = element_blank(), 
           strip.text.y = element_blank())
   
@@ -91,7 +91,7 @@
               label_size = 10) %>% 
     as_figure(label = 'ml_modeling_bcr_collagen_mrna', 
               ref_name = 'ml_mrna', 
-              caption = paste('Machine learnig modeling of BCR-free survival', 
+              caption = paste('Machine learning modeling of BCR-free survival', 
                               'with expression levels of the collagen-related', 
                               'transcripts as explanatory factors.'), 
               w = 180, 
