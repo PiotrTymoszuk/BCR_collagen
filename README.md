@@ -3,6 +3,8 @@ Modeling of biochemical relapse-free survival in PCa with expression of collagen
 
 ## Figures, Tables, and Supplementary Material
 
+The transcriptomic part of the main manuscript text is available as a [MS Word file](https://github.com/PiotrTymoszuk/BCR_collagen/blob/main/paper/manuscript_figures_tables.docx). 
+
 PDF files with main paper Figures are available [here](https://github.com/PiotrTymoszuk/BCR_collagen/tree/main/paper/figures).
 PDF files with Supplementary Figures are available [here](https://github.com/PiotrTymoszuk/BCR_collagen/tree/main/paper/supplementary%20figures).
 
