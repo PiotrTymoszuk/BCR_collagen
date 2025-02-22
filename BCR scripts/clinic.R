@@ -1,7 +1,7 @@
 # Survival gradient boosted machines with clinical predictors of 
 # BCR risk. 
-# Explanatory variables: Gleason (ISUP), log(PSA) at diagnosis and 
-# pT stage (3+ and 2 versus 1).
+# Explanatory variables: Gleason (ISUP), pT stage (3+ and 2 versus 1), and 
+# expression  of the PSA-expressing gene KLK3 in the tumor tissue. 
 # Response: BCR-free survival, with the time variable subjected to min/max 
 # scaling. 
 # Tuning andf training in the pooled GEO cohort. 

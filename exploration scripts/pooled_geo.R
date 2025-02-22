@@ -32,15 +32,17 @@
   ## variable lexicon
   
   expl_pool$lexicon <- globals$clinical_lexicon %>% 
-    filter(variable %in% c('psa_diagnosis', 'pt_stage', 'pn_stage', 
-                           'gleason_simple', 'relapse', 'rfs_months')) %>% 
+    filter(variable %in% c('psa_diagnosis', 
+                           'ct_stage', 
+                           'pt_stage', 
+                           'pn_stage', 
+                           'gleason_sum', 
+                           'gleason_simple', 
+                           'relapse', 
+                           'rfs_months')) %>% 
     mutate(variable = ifelse(variable == 'relapse', 
                              'relapse_factor', variable), 
            format = ifelse(variable == 'rfs_months', 'numeric', format), 
-           label = ifelse(label == 'gleason_simple', 
-                          'ISUP', 
-                          ifelse(variable == 'rfs_months', 
-                                 'Follow-up, months', label)), 
            test_type = ifelse(format == 'numeric', 
                               'kruskal_etasq', 'cramer_v'), 
            plot_type = ifelse(format == 'numeric', 
@@ -62,11 +64,7 @@
     map(select, sample_id, relapse, any_of(expl_pool$lexicon$variable)) %>% 
     map(mutate, 
         relapse_factor = car::recode(relapse, "0 = 'no'; 1 = 'yes'"), 
-        relapse_factor = factor(relapse_factor, c('no', 'yes')), 
-        gleason_simple = car::recode(gleason_simple, 
-                                     "'5 - 6' = 'ISUP1'; 
-                                     '7' = 'ISUP2'; 
-                                     '8+' = 'ISUP3+'")) %>% 
+        relapse_factor = factor(relapse_factor, c('no', 'yes'))) %>% 
     compress(names_to = 'cohort') %>% 
     mutate(cohort = factor(cohort, 
                            c('gse54460', 'gse70768', 'gse70769', 'gse220095')))
@@ -92,16 +90,22 @@
   
   insert_msg('Comparison of the clinical features')
   
-  expl_pool$test <- expl_pool$data %>% 
-    compare_variables(variables = expl_pool$lexicon$variable, 
-                      split_factor = 'cohort', 
-                      what = 'eff_size', 
-                      types = expl_pool$lexicon$test_type, 
-                      exact = FALSE, 
-                      ci = FALSE, 
-                      pub_styled = TRUE) %>% 
-    mutate(plot_cap = paste(eff_size, significance, sep = ', '))
+  ## with a map loop, because some variables have only NAs in single cohorts
   
+  expl_pool$test <-  
+    map2_dfr(expl_pool$lexicon$variable, 
+             expl_pool$lexicon$test_type, 
+             function(x, y) expl_pool$data %>% 
+               filter(!is.na(.data[[x]])) %>% 
+               compare_variables(variables = x, 
+                                 split_factor = 'cohort', 
+                                 what = 'eff_size', 
+                                 types = y, 
+                                 exact = FALSE, 
+                                 ci = FALSE, 
+                                 pub_styled = TRUE)) %>% 
+      mutate(plot_cap = paste(eff_size, significance, sep = ', '))
+
 # Plots for the clinical features -------
   
   insert_msg('Plots for the clinical features')
@@ -139,17 +143,6 @@
     expl_pool$plots[!names(expl_pool$plots) %in% c('psa_diagnosis', 'rfs_months')] %>% 
     map(~.x + scale_fill_brewer(palette = 'Reds'))
   
-# Common table with the results --------
-  
-  insert_msg('Common table with the results')
-
-  expl_pool$result_tbl <- 
-    left_join(expl_pool$stats, 
-              expl_pool$test[c('variable', 'significance', 'eff_size')], 
-              by = 'variable') %>% 
-    format_summ_tbl(rm_n = FALSE) %>% 
-    mutate(variable = exchange(variable, expl_pool$lexicon))
-  
 # Surv-fit objects, median survival and comparison -------
   
   insert_msg('Survival stats and testing')
@@ -165,7 +158,7 @@
     surv_pvalue(method = 'S1') %>% 
     re_adjust(p_variable = 'pval', method = 'none')
   
-# Kaplan-Meier plot -------
+# Kaplan-Meier plots -------
   
   insert_msg('Kaplan-Meier plot')
   
@@ -198,6 +191,53 @@
          subtitle = expl_pool$km_cap, 
          x = 'Biochemical relapse-free survival, months')
   
+# Common table with the results --------
+  
+  insert_msg('Common table with the results')
+  
+  expl_pool$result_tbl <- 
+    left_join(expl_pool$stats, 
+              expl_pool$test[c('variable', 'significance', 'eff_size')], 
+              by = 'variable') %>% 
+    format_summ_tbl(rm_n = FALSE) %>% 
+    mutate(variable = exchange(variable, expl_pool$lexicon)) %>% 
+    set_names(c('Variable', 
+                globals$study_labels[levels(expl_pool$data$cohort)]), 
+              'Significance', 'Effect size')
+  
+  ## clearing the cells without meaningfull data (NaN)
+  
+  expl_pool$result_tbl <- expl_pool$result_tbl %>% 
+    map_dfc(~ifelse(stri_detect(.x, fixed = 'NaN'), '', .x))
+  
+# appending the result table with the N numbers ------
+  
+  insert_msg('Appending the result table with the N numbers')
+  
+  expl_pool$n_numbers <- expl_pool$data %>% 
+    count(cohort) %>% 
+    mutate(cohort = globals$study_labels[as.character(cohort)]) %>% 
+    column_to_rownames('cohort') %>% 
+    t %>% 
+    as_tibble %>% 
+    mutate(Variable = 'Cancer samples, N') %>% 
+    relocate(Variable)
+  
+  expl_pool$result_tbl <- 
+    full_rbind(expl_pool$n_numbers, 
+               expl_pool$result_tbl)
+  
+# Appending the results with p values of Peto-Peto test for BCR-free survival --------
+  
+  insert_msg('Appending the results with BCR-free survival testing')
+
+  expl_pool$result_tbl <- expl_pool$result_tbl %>% 
+    mutate(Significance = ifelse(stri_detect(Variable, fixed = 'survival'), 
+                                 expl_pool$surv_test$significance[[1]], 
+                                 Significance), 
+           `Effect size` = ifelse(stri_detect(Variable, fixed = 'survival'), 
+                                 NA, `Effect size`))
+    
 # END -------
   
   expl_pool$data <- NULL

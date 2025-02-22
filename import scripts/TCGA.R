@@ -1,4 +1,8 @@
-# Import and wrangling of the TCGA data set (version Cell 2018, cBioportal)
+# Import and wrangling of the TCGA data set (version Cell 2018, cBioportal). 
+# Some clinical information is extracted from the GDC repository 
+# (Gleason scores and the most recent PSA). 
+# PSA concentration at diagnosis is extracted from the seminal paper of the 
+# TCGA consortium (DOI: 10.1016/j.cell.2015.10.025) published in cell 2015.
 
   insert_head()
   
@@ -56,14 +60,22 @@
   
   tcga$clinic$gdc <- tcga$clinic$gdc %>% 
     transmute(patient_id = bcr_patient_barcode, 
-              ## PSA * 10 for the common unit with other data sets 
-              psa_diagnosis = as.numeric(psa) * 10, 
+              psa_recent = as.numeric(psa), 
               gleason_sum = as.numeric(gleason_score), 
               gleason_major = factor(as.numeric(primary_gleason)), 
               gleason_minor = factor(as.numeric(secondary_gleason)), 
               gleason_simple = cut(gleason_sum, 
                                    c(-Inf, 6, 7, Inf), 
                                    c('ISUP1', 'ISUP2', 'ISUP3+')))
+  
+  ## patient's PSA at diagnosis extracted from the seminal paper 
+  ## of the TCGA consortium
+  
+  tcga$clinic$psa <- read_xls('./data/TCGA/mmc2_seminal_tcga.xls')
+  
+  tcga$clinic$psa <- tcga$clinic$psa %>% 
+    transmute(patient_id = PATIENT_ID, 
+              psa_diagnosis = as.numeric(PSA_preop))
   
   ## sample
   
@@ -87,7 +99,7 @@
   
   ## merging
   
-  tcga$clinic <- tcga$clinic[c("patient", "gdc", "sample")] %>% 
+  tcga$clinic <- tcga$clinic[c("patient", "gdc", "sample", "psa")] %>% 
     reduce(left_join, by = 'patient_id') %>% 
     full_rbind(., tcga$clinic$normals)
   
@@ -108,7 +120,7 @@
     filter(!is.na(entrez_id)) %>% 
     annotate_raw_symbol
   
-  ## expression: log2 transformation and aggregatin of duplicated 
+  ## expression: log2 transformation and aggregating of duplicated 
   ## genes by arithmetic mean
   
   tcga$expression <- tcga$expression %>% 

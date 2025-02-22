@@ -53,13 +53,7 @@
 
   ## data partition: training and test subset
   
-  set.seed(12345678)
-  
-  os_globals$train_idx <- 
-    createDataPartition(y = factor(os_globals$expression$death), 
-                        times = 1, 
-                        p = 2/3) %>% 
-    unlist
+  os_globals$train_idx <- gse16560$train_idx
   
   os_globals$data <- 
     list(training = os_globals$train_idx, 

@@ -203,7 +203,8 @@
                                                negative = 'steelblue', 
                                                ns = 'gray70'), 
                                    gene_variables = globals$genes, 
-                                   flip = FALSE) {
+                                   flip = FALSE, 
+                                   split_regulation = TRUE) {
     
     ## a bar or bubble plot of variable importance stats
     
@@ -219,11 +220,25 @@
              regulation = factor(regulation, c('positive', 'negative')), 
              variable = ifelse(stri_detect(variable, regex = gene_regex), 
                                html_italic(variable), 
-                               exchange(variable, 
-                                        globals$clinical_lexicon)), 
+                               ifelse(variable == 'KLK3', 
+                                      html_italic(variable), 
+                                      exchange(variable, 
+                                               globals$clinical_lexicon))), 
              variable = stri_replace(variable, 
                                      fixed = '_sq', 
                                      replacement = '<sup>2</sup>'))
+    
+    ## handling the special case: clinical and expression values
+    
+    if(any(stri_detect(data$variable, fixed = 'stage'))) {
+      
+      data <- data %>% 
+        mutate(regulation = ifelse(stri_detect(variable, regex = gene_regex), 
+                                   'collagen-related\ntranscript', 'clinical'), 
+               regulation = factor(regulation, 
+                                   c('collagen-related\ntranscript', 'clinical'))) 
+      
+    }
     
     if(!is.null(n_top)) {
       
@@ -234,7 +249,8 @@
     }
     
     data <- data %>% 
-      filter(!is.na(regulation))
+      filter(!is.na(regulation), 
+             .data[[imp_stat]] != 0)
     
     if(form == 'bar') {
       
@@ -285,11 +301,17 @@
       
     }
     
+    if(split_regulation) {
+      
+      imp_plot <- imp_plot + 
+        facet_grid(regulation ~ ., 
+                   scales = 'free', 
+                   space = 'free', 
+                   labeller = as_labeller(labeller))
+      
+    }
+    
     imp_plot <- imp_plot + 
-      facet_grid(regulation ~ ., 
-                 scales = 'free', 
-                 space = 'free', 
-                 labeller = as_labeller(labeller)) + 
       scale_fill_manual(values = palette) + 
       globals$common_theme + 
       labs(title = plot_title, 

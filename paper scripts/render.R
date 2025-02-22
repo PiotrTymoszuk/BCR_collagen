@@ -2,12 +2,6 @@
 
   insert_head()
   
-# reading the bibliography -------
-  
-  insert_msg('Raeding the bibliography')
-  
-  coll_bib <- read_bib('./paper/markdown/coll_biblio.bib')
-
 # analysis report -----
   
   insert_msg('Rendering manuscript parts')

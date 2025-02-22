@@ -1,4 +1,4 @@
-# Handling of common links in the Rmarkdown project
+# Handling of common links and biobiography in the Rmarkdown project
 
   insert_head()
 
@@ -15,12 +15,11 @@
          'trafo' = 'https://github.com/PiotrTymoszuk/trafo',
          'figur' = 'https://github.com/PiotrTymoszuk/figur',
          'clustTools' = 'https://github.com/PiotrTymoszuk/clustTools',
-         'caretExtra' = 'https://github.com/PiotrTymoszuk/caretExtra',
          'microViz' = 'https://github.com/PiotrTymoszuk/microViz', 
-         'biggrExtra' = 'https://github.com/PiotrTymoszuk/biggrExtra', 
          'coxExtensions' = 'https://github.com/PiotrTymoszuk/coxExtensions', 
          'kmOptimizer' = 'https://github.com/PiotrTymoszuk/kmOptimizer', 
-         'gseaTools' = 'https://github.com/PiotrTymoszuk/gseaTools') %>%
+         'fastTest' = 'https://github.com/PiotrTymoszuk/fastTest', 
+         'graphExtra' = 'https://github.com/PiotrTymoszuk/graphExtra') %>%
     compress(names_to = 'obj_name',
              values_to = 'x') %>%
     mutate(ref_name = paste0('_', obj_name, '_'))
@@ -28,6 +27,12 @@
   proj_links <- proj_links[c('ref_name', 'x')] %>%
     pmap(mdlink) %>%
     set_names(proj_links$obj_name)
+  
+# reading the bibliography -------
+  
+  insert_msg('Rending the bibliography')
+  
+  coll_bib <- read_bib('./paper/markdown/coll_biblio.bib')
 
 # END ------
 

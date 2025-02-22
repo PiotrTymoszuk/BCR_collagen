@@ -1,4 +1,8 @@
-# Import and wrangling of the GSE16560 data set
+# Import and wrangling of the GSE16560 data set. 
+# This cohort will be used for modeling of overall survival with the collagen-
+# related gene expression. 
+# To this end, we're defining the training/test partition of the cohort in a 2:1 
+# ratio
 
   insert_head()
   
@@ -68,11 +72,23 @@
     filter(!duplicated(gene_symbol), 
            !duplicated(entrez_id))
   
+# Indexes of the training subset of the GSE16560 cohort -------
+  
+  insert_msg('Indexes for the training subset of the cohort')
+  
+  set.seed(12345678)
+  
+  gse16560$train_idx <- 
+    createDataPartition(y = factor(gse16560$clinic$death), 
+                        times = 1, 
+                        p = 2/3) %>% 
+    unlist
+  
 # Caching the results ------
   
   insert_msg('Caching the results')
   
-  gse16560 <- gse16560[c("clinic", "annotation", "expression")]
+  gse16560 <- gse16560[c("clinic", "annotation", "expression", "train_idx")]
   
   save(gse16560, file = './data/gse16560.RData')
   

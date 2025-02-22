@@ -87,7 +87,7 @@
       'pn_stage' = 'pN stage', 
       'pm_stage' = 'pM stage', 
       'gleason_sum' = 'Gleason score', 
-      'gleason_simple' = 'ISUP', 
+      'gleason_simple' = 'ISUP grade', 
       'surgical_margins' = 'Surgical margins', 
       'ece' = 'Extracapsular extension', 
       'death' = 'Death', 

@@ -126,7 +126,8 @@
     guides(x = guide_axis(angle = 45)) + 
     theme(strip.background.y = element_blank(), 
           strip.text.y = element_blank(),
-          axis.text.x = element_markdown(size = 6.5)) 
+          axis.text.x = element_markdown(size = 6.5))  + 
+    labs(fill = 'explanatory\nfactor')
   
   ## the entire figure
   
@@ -228,7 +229,8 @@
           labs(title = paste0(.x$labels$title, 
                               globals$algo_labels[["ridge"]], 
                               sep = ', ')) + 
-          theme(legend.position = 'bottom', 
+          theme(plot.subtitle = element_blank(), 
+                legend.position = 'bottom', 
                 legend.title = element_blank(), 
                 legend.text = element_text(size = 7))) %>% 
     plot_grid(plotlist = .,

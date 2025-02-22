@@ -31,12 +31,21 @@
     './tools/functions.R') %>% 
     source_all(message = TRUE, crash = TRUE)
   
+# Links and bibliography --------
+  
+  insert_msg('Links and bibliography')
+  
+  c('./paper scripts/links.R') %>% 
+    source_all(message = TRUE, crash = TRUE)
+
 # Figures, Tables, and Supplementary Material -------
   
   insert_msg('Figures, Tables, Supplements')
   
   c('./paper scripts/figures.R', 
-    './paper scripts/supplementary_figures.R') %>% 
+    './paper scripts/supplementary_figures.R', 
+    './paper scripts/supplementary_tables.R', 
+    './paper scripts/render.R') %>% 
     source_all(message = TRUE, crash = TRUE)
   
 # END ------

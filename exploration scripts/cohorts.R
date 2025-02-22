@@ -50,12 +50,32 @@
                   what = 'table', 
                   pub_styled = TRUE)) %>% 
     format_desc() %>% 
-    set_names(c('variable', 
+    set_names(c('Variable', 
                 globals$study_labels[names(cohorts$data)])) %>% 
     format_summ_tbl(rm_n = FALSE) %>% 
-    mutate(variable = factor(variable, cohorts$lexicon$variable)) %>% 
-    arrange(variable) %>% 
-    mutate(variable = exchange(variable, cohorts$lexicon))
+    mutate(Variable = factor(Variable, cohorts$lexicon$variable)) %>% 
+    arrange(Variable) %>% 
+    mutate(Variable = exchange(as.character(Variable), 
+                               cohorts$lexicon))
+  
+# appending the stat table with the total N numbers ogf cancer samples ------
+  
+  insert_msg('N numbers')
+  
+  cohorts$n_nunbers <- cohorts$data %>% 
+    map_dbl(nrow) %>% 
+    compress(names_to = 'cohort', 
+             values_to = 'n') %>% 
+    mutate(cohort = globals$study_labels[cohort]) %>% 
+    column_to_rownames('cohort') %>% 
+    t %>% 
+    as_tibble %>% 
+    mutate(Variable = 'Cancer samples, N') %>% 
+    relocate(Variable)
+  
+  cohorts$stats <- 
+    full_rbind(cohorts$n_nunbers, 
+               cohorts$stats)
   
 # END -----
   

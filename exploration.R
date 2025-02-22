@@ -1,5 +1,5 @@
 # Exploratory analysis of expression of collagen-related genes shared by all 
-# transcriptomic datasets
+# transcriptomic datas ets
 #
 # 1) Characteristic of the cohorts and samples
 #
@@ -31,6 +31,7 @@
 
   library(survival)
   library(survminer)
+  library(kmOptimizer)
   
   library(ggrepel)
   library(ggtext)
@@ -55,7 +56,7 @@
   insert_msg('Exploration scripts')
   
   ## general distribution stats
-  ## coexpression analysis and co-expression networks
+  ## co-expression analysis and co-expression networks
   
   c('./exploration scripts/cohorts.R', 
     './exploration scripts/distribution.R', 
@@ -63,11 +64,16 @@
     './exploration scripts/networks.R') %>% 
     source_all(message = TRUE, crash = TRUE)
   
-  ## characteristic of the pooled GEO cohort
+  ## characteristic of the pooled GEO cohort; 
+  ## characteristic of the training and test portions of the GSE16560 cohort; 
+  ## correlation of KLK3 with blood PSA levels, 
+  ## and association of KLK3 with BCR-free survival
   
-  c('./exploration scripts/pooled_geo.R') %>% 
+  c('./exploration scripts/pooled_geo.R', 
+    './exploration scripts/gse16560.R', 
+    './exploration scripts/psa.R') %>% 
     source_all(message = TRUE, crash = TRUE)
-  
+
 # END -------
   
   insert_tail()

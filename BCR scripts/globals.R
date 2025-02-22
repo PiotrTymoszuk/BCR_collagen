@@ -2,8 +2,14 @@
 # in th pooled GEO, TCGA, and DKFZ cohorts. 
 #
 # BCR-free survival (+1 months to avoid zero survival times) is min/max scaled.
-# Clinical information (Gleadson/ISUP, pT stage, and log PCA) is extracted 
-# as well
+# Clinical information (Gleason/ISUP, pT stage) is extracted 
+# as well and will be used for construction of a clinical model. 
+# Unfortunately, information on pre-operative PSA in the TCGA cohort is 
+# provided only for a small minority of patients (n = 185 with 19 BCR cases), 
+# which excludes it as a predictor of BCR-free survival. 
+# Instead we include ComBat-adjusted log2 expression of PSA (KLK3 gene) in the 
+# clinical predictor set (references: DOI 10.3325/cmj.2020.61.450 and 
+# DO 10.1038/s41391-020-00283-3)
 
   insert_head()
   
@@ -117,19 +123,32 @@
   
   surv_globals$clinic <- 
     surv_globals$clinic[surv_globals$cohorts] %>%
-    map(select, sample_id, gleason_simple, pt_stage, psa_diagnosis) %>% 
+    map(select, sample_id, gleason_simple, pt_stage) %>% 
     map(~filter(.x, complete.cases(.x)))
   
   ## some minimal wrangling: 
-  ## pooling of pT stages,  
-  ## common units and log conversion of PSA
+  ## pooling of pT stages
 
   surv_globals$clinic <- surv_globals$clinic %>% 
     map(mutate, 
-        psa_diagnosis = log(psa_diagnosis + 1), 
+        #psa_diagnosis = log(psa_diagnosis + 1), 
+        #psa_diagnosis = zScores(psa_diagnosis), 
         pt_stage = car::recode(pt_stage, 
                               "'T3' = 'T3+'; 'T4' = 'T4+'"), 
         pt_stage = factor(pt_stage, c('T1', 'T2', 'T3+')))
+  
+  ## merging with the KLK3 expression levels
+
+  surv_globals$psa <- list(geo_pool = geo_pool, 
+                           tcga = tcga, 
+                           dkfz = dkfz) %>% 
+    map(~.x$combat[c('sample_id', 'KLK3')]) %>% 
+    map(mutate, KLK3 = zScores(KLK3))
+  
+  surv_globals$clinic <- 
+    map2(surv_globals$clinic, 
+         surv_globals$psa, 
+         left_join, by = 'sample_id')
   
 # Tuning grid for the GBM, RF, and SVM models --------
   

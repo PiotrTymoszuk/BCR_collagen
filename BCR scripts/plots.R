@@ -229,16 +229,19 @@
                          5), 
                      rep(list(c(positive = 'steelblue', 
                                 negative = 'steelblue', 
-                                ns = 'gray70')), 
+                                ns = 'gray70', 
+                                clinical = 'aquamarine3', 
+                                `collagen-related\ntranscript` = 'steelblue')), 
                          3))) %>% 
     pmap(plot_surv_importance, 
          form = 'bar', 
-         flip = TRUE) %>% 
+         flip = TRUE, 
+         split_regulation = FALSE) %>% 
     map(~.x + 
           theme(plot.subtitle = element_blank()) + 
           geom_vline(xintercept = 0,
                      linetype = 'dashed') + 
-          theme(legend.position = 'none'))
+          theme(legend.position = 'bottom'))
   
 # Error structure: plots of square errors of prediction -------
   
