@@ -59,6 +59,81 @@
   
   insert_msg('The collagen-related genes')
   
+  suppl_tab$genes <- globals$genes_lexicon %>% 
+    mutate(entrez_id = mapIds(org.Hs.eg.db, 
+                              keys = gene_symbol, 
+                              column = 'ENTREZID', 
+                              keytype = 'SYMBOL'),
+           gene_group = factor(gene_group, 
+                               c('proline metabolism', 
+                                 'collagen modification', 
+                                 'ECM component', 
+                                 'ECM processing', 
+                                 'adhesion'))) %>% 
+    arrange(gene_group) %>% 
+    select(gene_group, gene_symbol, entrez_id) %>% 
+    set_names(c('Functional classification', 'Gene symbol', 'Entrez ID')) %>% 
+    mdtable(label = 'genes', 
+            ref_name = 'genes', 
+            caption = 'Collagen-related genes and their classification.')
+  
+# Co-expression networks, vertex importance stats --------
+  
+  insert_msg('Co-expression networks, gene importance')
+  
+  ## top 5 genes with the largest degree per cohort are shown, 
+  ## the complete table as a supplementary file; 
+  ## betweenness is min/max scaled
+  
+  suppl_tab$nets <- net$graph_obj[c("geo_pool", "tcga", "dkfz")] %>% 
+    map(get_vertex_attributes) %>% 
+    map(select, 
+        name, gene_group, degree, hub_score, betweenness, transitivity) %>% 
+    map(mutate, 
+        betweenness = minMax(betweenness)) %>% 
+    compress(names_to = 'cohort') %>% 
+    relocate(cohort) %>% 
+    mutate(cohort = factor(cohort, c("geo_pool", "tcga", "dkfz"))) %>% 
+    arrange(cohort) %>% 
+    mutate(cohort = globals$study_labels[as.character(cohort)], 
+           betweenness = signif(betweenness, 2), 
+           hub_score = signif(hub_score, 2), 
+           transitivity = signif(transitivity, 2)) %>% 
+    set_names(c('Cohort', 
+                'Gene symbol', 'Functional classification', 
+                'Degree', 'Hub score', 'Betweenness', 'Transitivity'))
+  
+  suppl_tab$nets <- suppl_tab$nets %>% 
+    as_mdtable(label = 'nets', 
+               ref_name = 'nets', 
+               caption = paste('Vertex importance statistics for', 
+                               'co-expression networks of the collagen-related', 
+                               'transcripts.', 
+                               'The co-expression networks were built for in the', 
+                               'pooled GEO, TCGA, and DKFZ cohorts for', 
+                               'transcripts with pairwise correlation of', 
+                               'expression levels with', 
+                               "Spearman's rho >= 0.5.", 
+                               'Metrics of importance of the vertices of the', 
+                               'co-expression networks, degree, hub score,', 
+                               'betweenness, and transitivity, were computed.', 
+                               'Top five vertices with the largest hub score per', 
+                               'cohort are presented.', 
+                               'The full table is available as a supplementary', 
+                               'Excel file.'))
+  
+# Results of univariable survival modeling --------
+  
+  insert_msg('Univariable modeling of BCR-free survival')
+  
+  ## the common markers are shown, the rest is available 
+  ## as a supplementary Excel file
+  
+# Tuning parameters, machine learning models ------
+  
+  insert_msg('Tuning parameters, machine learning models')
+  
+  
 # Saving the tables on the disc -----
   
   insert_msg('Saving the tables on the disc')

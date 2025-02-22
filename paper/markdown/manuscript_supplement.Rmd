@@ -97,10 +97,58 @@ flextable::flextable(suppl_tab$gse16560) %>%
   footnote(1, 4:5, 
             value = as_paragraph("Categorical variables: \u03C7\u00B2 test with Cramer's V effect size statistic. Numeric variables: Kruskal-Wallis test with \u03B7\u00B2 effect size statistic. Overall survival: Peto-Peto test. P values corrected for multiple testing with the false discovery rate method."), 
             part = 'header', 
-            ref_symbol = 'b')
+            ref_symbol = 'b') %>% 
+  theme_vanilla
   
 
 ```
+
+\newpage
+
+```{r tab-genes, tab.cap = "Collagen-related genes and their classification."}
+
+flextable::flextable(suppl_tab$genes) %>% 
+  merge_v(1) %>% 
+  italic(j = 2, part = 'body') %>% 
+  set_widths(c(3.5, 3, 3)) %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-nets, tab.cap = "Vertex importance statistics for co-expression networks of the collagen-related transcripts. The co-expression networks were built for in the pooled GEO, TCGA, and DKFZ cohorts for transcripts with pairwise correlation of expression levels with Spearman's rho >= 0.5. Metrics of importance of the vertices of the co-expression networks, degree, hub score, betweenness, and transitivity, were computed. Top five vertices with the largest hub score per cohort are presented. The full table is available as a supplementary Excel file."}
+
+suppl_tab$nets %>% 
+  group_by(Cohort) %>% 
+  slice_max(`Hub score`, n = 5) %>% 
+  ungroup %>% 
+  flextable %>% 
+  merge_v(1) %>% 
+  italic(j = 2) %>% 
+  set_widths(c(2.3, 3, 3.5, rep(2.3, 4))) %>% 
+  footnote(1, 4, 
+           value = as_paragraph("Degree: number of network neighbors, i.e. correlations with Spearman's \u03C1 >= 0.5."), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  footnote(1, 5, 
+           value = as_paragraph("Hub score: eigenvector of the affinity matrix; a metric of the overall correlation strength."), 
+           part = 'header', 
+           ref_symbols = 'b') %>% 
+  footnote(1, 6, 
+           value = as_paragraph('Betweenness: minimum/maximum scaled number of the shortest paths between pairs of network vertices which pass through the vertex of interest; measure of connectivity and centrality.'), 
+           part = 'header', 
+           ref_symbols = 'c') %>% 
+  footnote(1, 7, 
+           value = as_paragraph('Transitivity: probability that the adjacent vertices of a vertex are connected; measure of the local densitiy of the co-expression network.'), 
+           part = 'header', 
+           ref_symbols = 'd') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
 
 
 \newpage
