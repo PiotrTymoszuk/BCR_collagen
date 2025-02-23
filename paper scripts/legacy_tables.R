@@ -492,7 +492,7 @@
                                    "'lambda' = '\u03BB'; 
                                    'type' = 'SVM model type'; 
                                    'gamma.mu' = '\u03B3'; 
-                                   'mtry' = 'number of variables per try, mtry'; 
+                                   'mtry' = 'number of variables per tree, mtry'; 
                                    'splitrule' = 'splitting rule'; 
                                    'nsplit' = 'number of splits'; 
                                    'nodesize' = 'minimal node size'; 

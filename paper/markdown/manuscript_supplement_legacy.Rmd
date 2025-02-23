@@ -509,6 +509,10 @@ suppl_paper_tbl$rfs_univariable[1, 1] %>%
 
 \newpage
 
+
+
+\newpage
+
 # Supplementary Figures 
 
 ```{r fig-norm-tumor, fig.width = figur::convert(suppl_paper_fig$norm_tumor, to = 'in')$w, fig.height = figur::convert(suppl_paper_fig$norm_tumor, to = 'in')$h, fig.cap = 'Expression of collagen-related genes in the normal prostate and prostate cancer tissue.'}

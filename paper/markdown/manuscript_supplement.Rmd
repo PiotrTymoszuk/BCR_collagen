@@ -71,7 +71,7 @@ flextable::flextable(suppl_tab$cohorts) %>%
 ```{r tab-pool, tab.cap = "Characteristic of GEO data sets which constitute the pooled GEO cohort. Numeric variables are presented as medians with interquartile ranges (IQR) and ranges. Qualitative variables are presented as percentages of categories within the complete observation set."}
 
 flextable::flextable(suppl_tab$pool) %>% 
-  set_widths(c(3.5, rep(3, 4), 2.3, 2.3)) %>% 
+  set_widths(c(3.5, rep(3.3, 4), 2.2, 2.2)) %>% 
   footnote(1, 1, 
            value = as_paragraph('PSA: prostate-specific antigen; pT stage: pathological tumor stage; pN stage: pathological lymph node stage; pM stage: pathological metastasis stage; ISUP grade: grading according to the International Society of Urological Pathology.'), 
            part = 'header', 
@@ -126,7 +126,7 @@ suppl_tab$nets %>%
   flextable %>% 
   merge_v(1) %>% 
   italic(j = 2) %>% 
-  set_widths(c(2.3, 3, 3.5, rep(2.3, 4))) %>% 
+  set_widths(c(2, 2.7, 3.5, rep(2.5, 4))) %>% 
   footnote(1, 4, 
            value = as_paragraph("Degree: number of network neighbors, i.e. correlations with Spearman's \u03C1 >= 0.5."), 
            part = 'header', 
@@ -149,7 +149,126 @@ suppl_tab$nets %>%
 
 \newpage
 
+```{r tab-uni-bcr, tab.cap = "Univariable analysis of biochemical relapse (BCR) free survival for the collagen-realted transcripts in the pooled GEO, TCGA, and DKFZ cohort. PCA patients were classified as high and low expressors of the collagen-related transcripts by expression cutoffs corresponding to the largest differences in BCR-free survival between the expression strata. BCR risk of high as compared with low expressors was modeled by univariable Cox proportional hazard regression. P values were corrected for multiple testing with the false discovery rate method. The modeling results are shown for the collagen-related genes associated with significant differences in BCR-free survival in all three investigated cohorts. The full analysis is available as a supplementary Excel file."}
 
+suppl_tab$uni_bcr %>% 
+  filter(`Gene symbol` %in% reduce(uni_cut$common_significant, union)) %>% 
+  arrange(`Association with BCR risk`, `Gene symbol`, Cohort) %>% 
+  relocate(`Association with BCR risk`, `Gene symbol`, Cohort) %>% 
+  flextable %>% 
+  merge_v(1:2) %>% 
+  italic(j = 2) %>% 
+  set_widths(c(2, 2, 2, 1.8, rep(2.4, 2), 2.2, 2.3, rep(1.7, 2))) %>% 
+  footnote(1, 7, 
+           value = as_paragraph('Harazd ratio (HR) with 95% confidence intervals (CI).'), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  footnote(1, 9, 
+           value = as_paragraph("C-index: Harrel's concordance index, a measure of model accuracy. High values are expected for a highly accurate model; concordance index = 0.5 is expected for random predictions."), 
+           part = 'header', 
+           ref_symbols = 'b') %>% 
+  footnote(1, 10, 
+           value = as_paragraph('IBS: Integrated Brier Score, a metric of overall model calibration. Low values are expected for a well calibrate model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
+           part = 'header', 
+           ref_symbols = 'c') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-tune, tab.cap = "Selection of the optimal parameters of machine learning models of biochemical relapse (BCR) free survival in the pooled GEO training cohort."}
+
+flextable::flextable(suppl_tab$tune) %>% 
+  set_widths(c(2.7, 6, 6)) %>% 
+  footnote(1, 1, 
+           value = as_paragraph('SVM: Support Vector Machines; GBM: Gradient Boosted Machines.'), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  footnote(1:6, 1, 
+           value = as_paragraph('Explanatory factors: expression levels of the collagen-related transcripts.'), 
+           part = 'body', 
+           ref_symbols = 'b') %>% 
+  footnote(7, 1, 
+           value = as_paragraph('Explanatory factors: pathological tumor stage, ISUP grade, and log2 expression of the PSA coding gene KLK3 in the tumor tissue.'), 
+           part = 'body', 
+           ref_symbols = 'c') %>% 
+  footnote(8, 1, 
+           value = as_paragraph('Explanatory factors: pathological tumor stage, ISUP grade, and log2 expression of the PSA coding gene KLK3 in the tumor tissue, log2 expression of the collagen-related transcripts.'), 
+           part = 'body', 
+           ref_symbols = 'd') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-bcr-eval, tab.cap = "Performance of machine learning models at prediction of biochemical relapse (BCR) free survival."}
+
+flextable::flextable(suppl_tab$bcr_eval) %>% 
+  merge_v(1:2) %>% 
+  set_widths(c(3.5, 2.7, 3.5, rep(2.5, 2))) %>% 
+   footnote(1, 1, 
+           value = as_paragraph('SVM: Support Vector Machines; GBM: Gradient Boosted Machines.'), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  footnote(1:18, 1, 
+           value = as_paragraph('Explanatory factors: expression levels of the collagen-related transcripts.'), 
+           part = 'body', 
+           ref_symbols = 'b') %>% 
+  footnote(19:21, 1, 
+           value = as_paragraph('Explanatory factors: pathological tumor stage, ISUP grade, and log2 expression of the PSA coding gene KLK3 in the tumor tissue.'), 
+           part = 'body', 
+           ref_symbols = 'c') %>% 
+   footnote(22:24, 1, 
+           value = as_paragraph('Explanatory factors: pathological tumor stage, ISUP grade, and log2 expression of the PSA coding gene KLK3 in the tumor tissue, log2 expression of the collagen-related transcripts.'), 
+           part = 'body', 
+           ref_symbols = 'd') %>% 
+  footnote(1, 4, 
+           value = as_paragraph("C-index: Harrel's concordance index, a measure of model accuracy. High values are expected for a highly accurate model; concordance index = 0.5 is expected for random predictions."), 
+           part = 'header', 
+           ref_symbols = 'b') %>% 
+  footnote(1, 5, 
+           value = as_paragraph('IBS: Integrated Brier Score, a metric of overall model calibration. Low values are expected for a well calibrate model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
+           part = 'header', 
+           ref_symbols = 'c') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-os-tune, tab.cap = "Selection of the optimal parameters of machine learning models of overall survival (OS) in the training subset of the GSE16560 cohort. The models used log2 expression of the collagen-related genes as explanatory variables."}
+
+flextable::flextable(suppl_tab$os_tune) %>% 
+  set_widths(c(2.7, 6, 6)) %>% 
+  footnote(1, 1, 
+           value = as_paragraph('SVM: Support Vector Machines; GBM: Gradient Boosted Machines.'), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-os-eval, tab.cap = "Performance of machine learning models at prediction of overall survival in the training and test subsets of the GSE16560 cohort. The models used log2 expression of the collagen-related genes as explanatory factors."}
+
+flextable::flextable(suppl_tab$os_eval) %>% 
+  set_widths(c(3.5, 2.7, rep(2.5, 2))) %>% 
+  merge_v(1) %>% 
+  footnote(1, 3, 
+           value = as_paragraph("C-index: Harrel's concordance index, a measure of model accuracy. High values are expected for a highly accurate model; concordance index = 0.5 is expected for random predictions."), 
+           part = 'header', 
+           ref_symbols = 'b') %>% 
+  footnote(1, 4, 
+           value = as_paragraph('IBS: Integrated Brier Score, a metric of overall model calibration. Low values are expected for a well calibrate model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
+           part = 'header', 
+           ref_symbols = 'c') %>% 
+  theme_vanilla
+  
+
+```
 
 \newpage
 
