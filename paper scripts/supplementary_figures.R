@@ -11,8 +11,11 @@
   insert_msg('Co-expression of the collagen-related genes')
   
   suppl_fig$nets <- 
-    net$graph_plots$gene_group[c("geo_pool", "tcga", "dkfz")] %>% 
-    map(~.x + theme(legend.position = 'none')) %>% 
+    map2(net$graph_plots$gene_group[c("geo_pool", "tcga", "dkfz")], 
+         c("geo_pool", "tcga", "dkfz"), 
+         ~.x + 
+           labs(title = globals$study_labels[.y]) + 
+           theme(legend.position = 'none')) %>% 
     c(list(get_legend(net$graph_plots$gene_group[[1]]))) %>% 
     plot_grid(plotlist = ., 
               ncol = 2, 
@@ -31,6 +34,7 @@
   
   suppl_fig$hubs <- net$stat_plots[c("geo_pool", "tcga", "dkfz")] %>% 
     map(~.x + theme(legend.position = 'none')) %>% 
+    c(list(get_legend(net$stat_plots$geo_pool))) %>% 
     plot_grid(plotlist = ., 
               ncol = 2, 
               align = 'hv', 
@@ -87,8 +91,8 @@
     surv_cohort$forest_plot %>% 
     as_figure(label = 'bcr_survival_gbm_model_cohort_confounder_pooled_geo', 
               ref_name = 'gbm_cohort', 
-              caption = paste('Investigation of confounding effect of the', 
-                              'cohort on prediction of BCR-free survival', 
+              caption = paste('Investigation of the confounding study', 
+                              'effect on prediction of BCR-free survival', 
                               'by the GBM model in the pooled GEO cohort.'), 
               w = 140, 
               h = 110)

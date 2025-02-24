@@ -145,7 +145,7 @@
            plot_title = paste(globals$study_labels[names(net$graph_obj)], 
                               i[[2]], sep = ', ')) %>% 
       pmap(plot, 
-           layout = layout.fruchterman.reingold, 
+           layout = layout.kamada.kawai, 
            vertex_fill_variable = i[[1]], 
            vertex_color_variable = NULL, 
            vertex_color = 'black', 

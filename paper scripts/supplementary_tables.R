@@ -356,7 +356,7 @@
     as_mdtable(label = 'os_eval', 
                ref_name = 'os_eval', 
                caption = paste('Performance of machine learning models at', 
-                               'prediction of overall survival in the', 
+                               'prediction of overall survival (OS) in the', 
                                'training and test subsets of the GSE16560', 
                                'cohort.', 
                                'The models used log2 expression of the', 

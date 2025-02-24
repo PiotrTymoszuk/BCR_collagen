@@ -237,9 +237,9 @@
       full = 'firebrick4')
   
   globals$cohort_model_labels <- 
-    c(cohort = 'cohort', 
+    c(cohort = 'study', 
       gbm_score = 'GBM predictor', 
-      full = 'GBM predictor + data set')
+      full = 'GBM predictor + study')
 
 # END -----
   

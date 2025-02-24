@@ -9,7 +9,7 @@
 # which excludes it as a predictor of BCR-free survival. 
 # Instead we include ComBat-adjusted log2 expression of PSA (KLK3 gene) in the 
 # clinical predictor set (references: DOI 10.3325/cmj.2020.61.450 and 
-# DO 10.1038/s41391-020-00283-3)
+# DOI 10.1038/s41391-020-00283-3)
 
   insert_head()
   

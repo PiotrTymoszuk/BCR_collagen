@@ -19,7 +19,8 @@
          'coxExtensions' = 'https://github.com/PiotrTymoszuk/coxExtensions', 
          'kmOptimizer' = 'https://github.com/PiotrTymoszuk/kmOptimizer', 
          'fastTest' = 'https://github.com/PiotrTymoszuk/fastTest', 
-         'graphExtra' = 'https://github.com/PiotrTymoszuk/graphExtra') %>%
+         'graphExtra' = 'https://github.com/PiotrTymoszuk/graphExtra', 
+         'htGLMNET' = 'https://github.com/PiotrTymoszuk/htGLMNET') %>%
     compress(names_to = 'obj_name',
              values_to = 'x') %>%
     mutate(ref_name = paste0('_', obj_name, '_'))

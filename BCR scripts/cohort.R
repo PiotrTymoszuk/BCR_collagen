@@ -156,7 +156,7 @@
                     color_variable = 'model_type', 
                     palette = unname(globals$cohort_model_colors), 
                     labels = globals$cohort_model_labels, 
-                    plot_title = 'Data set confounder, pooled GEO cohort', 
+                    plot_title = 'Study confounder, pooled GEO cohort', 
                     plot_subtitle = 'GBM survival modeling')
   
 # Forest plot of the HRs -------
@@ -208,7 +208,7 @@
     theme(axis.title.y = element_blank(), 
           strip.text.y = element_text(angle = 0, 
                                       hjust = 0)) + 
-    labs(title = 'Data set confounder, pooled GEO cohort', 
+    labs(title = 'Study confounder, pooled GEO cohort', 
          subtitle = 'Inference and likelihood ratio test', 
          x = 'HR, 95% CI')
   

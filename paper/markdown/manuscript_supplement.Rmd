@@ -1,0 +1,578 @@
+---
+title: "Prognostic and biological relevance of collagen-related genes in prostate cancer"
+subtitle: "Supplementary material, transcriptome part"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+
+output: 
+  bookdown::word_document2:   
+    reference_docx: ms_template.docx
+
+bibliography: coll_biblio.bib
+
+csl: frontiers-in-immunology.csl
+
+header-includes:
+  \usepackage{longtable}
+  \usepackage{tabu}
+  \usepackage{caption}
+  \usepackage{makecell}
+  \usepackage{pdflscape}
+  \usepackage{array}
+  \usepackage{booktabs}
+  \usepackage{threeparttable}
+  \usepackage{threeparttablex}
+  \usepackage{wrapfig}
+  \usepackage{multirow}
+  \usepackage[normalem]{ulem}
+  \usepackage{colortbl}
+  \usepackage{xcolor}
+  \usepackage{float} \floatplacement{figure}{H} \floatplacement{table}{H}
+  \newcommand{\beginsupplement}{\setcounter{table}{0}  \renewcommand{\thetable}{S\arabic{table}}       \setcounter{figure}{0} \renewcommand{\thefigure}{S\arabic{figure}}}
+---
+
+```{r, setup, include = FALSE}
+
+library(bookdown)
+library(flextable)
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      warning = FALSE, 
+                      message = FALSE, 
+                      dev = "png", 
+                      dpi = 600, 
+                      tab.cap.pre = 'Table ', 
+                      tab.cap.sep = " ", 
+                      tab.cap.style = 'Table Heading')
+
+set_flextable_defaults(font.family = 'Cambria', font.size = 9)
+
+
+```
+
+\newpage
+
+# Supplementary Methods for transcriptome analyses
+
+## Software
+
+The analysis was done with R version 4.2.3 (R Foundation). 
+
+Tabular data were handled with the packages _tidyverse_ [@Wickham2019], _rlang_ [@Henry2022] and [_trafo_](https://github.com/PiotrTymoszuk/trafo). 
+Text data were handled with _stringi_ [@Gagolewski2021]. 
+For transcormation of numeric variables and variable distribution analyses, package [_microViz_](https://github.com/PiotrTymoszuk/microViz) was used. 
+
+Import of the TCGA and DKFZ data sets from the cBioportal repository was accomplished with in-house-developed R scripts. 
+Transcriptome data sets from the Gene Expression Omnibus were fetched with the _GEOquery_ package [@Sean2007]. 
+Gene and probe annotation was accomplished with the _AnnotationDbi_ [@Pages2022] and _org.Hs.eg.db_ packages [@Carlson2022]. 
+ComBat adjustment of transcript expression levels for batch effects [@Leek2012] was accomplished with [_htGLMNET_](https://github.com/PiotrTymoszuk/htGLMNET) package. 
+Training/test cohort split was accomplished with _caret_ [@Kuhn2008]. 
+
+For descriptive statistics, statistical hypothesis testing, effect size calculation, and correlation analyses, packages [_ExDA_](https://github.com/PiotrTymoszuk/ExDA) and [_fastTest_](https://github.com/PiotrTymoszuk/fastTest) were used. 
+Co-expression network analyses were performed with packages _igraph_ [@Csardi2006] and [_graphExtra_](https://github.com/PiotrTymoszuk/graphExtra). 
+
+Multi-parameter modeling of biochemical relapse (BCR) free survival and overall survival was done with the packages 
+_glmnet_ [@Friedman2010] and [_htGLMNET_](https://github.com/PiotrTymoszuk/htGLMNET) (Ridge, Elastic Net and LASSO cox regression), 
+_survivalsvm_ [@Fouodo2018] (Support Vector Machines [SVM]), 
+_rfsrc_ [@Ishwaran2008; @Ishwaran2022a] (Random Forest), 
+_gbm_ [@Greenwell2022] (Gradient Boosted Machines [GBM]), 
+_survival_ [@Therneau2000], 
+_surviminer_ [@Kassambara2016],  
+[_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions), and 
+_caret_ [@Kuhn2008]. 
+Univariable analysis of relapse-free survival was accomplished with packages [_kmOptimizer_](https://github.com/PiotrTymoszuk/kmOptimizer'), _survival_, _survminer_ and [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions). 
+
+For visualization of the results, the packages 
+_ggplot2_ [@Wickham2019] (scatter, dot, bar and Forest plots), 
+_survminer_, [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions), 
+[_kmOptimizer_](https://github.com/PiotrTymoszuk/kmOptimizer') (Kaplan-Meier plots, plots of Brier scores), and 
+[_graphExtra_](https://github.com/PiotrTymoszuk/graphExtra) (network plots) were used. 
+Figures and tables were created with the packages _cowplot_ [@Wilke2019] and _flextable_ [@Gohel2022], respectively. 
+
+Parts of the manuscript and Supplementary Material were written in _rmarkdown_ environment [@Allaire2022] with _bookdown_ package [@Xie2016], and rendered as Word files with _knitr_ [@Xie2022]. 
+Figure and table objects in the _rmarkdown_ documents were managed with [_figur_](https://github.com/PiotrTymoszuk/figur). 
+
+## Data sources and data import
+
+Transcriptome cohorts were selected from studies deposited at cBioportal and Gene Expression Omnibus (GEO) with the following criteria: biochemical relapse and biochemical relapse-free survival or death and overall survival information, and expression data for `r nrow(globals$genes_interest)` collagen-related genes investigated in our previous collagen project [@Heidegger2024].
+
+The TCGA prostate cancer data set [@Liu2018; @Abeshouse2015] and DKFZ data set [@Gerhauser2018] consisted of normalized RNA sequencing data for `r tcga$expression %>% filter(tissue_type == 'tumor') %>% nrow` and `r dkfz$expression %>% filter(tissue_type == 'tumor') %>% nrow` cancer samples, respectively, with accompanying clinical information and were obtained from the cBioportal repository with in-house-developed R scripts. 
+
+The GSE16560 [@Sboner2010] (microarray, Human 6k Transcriptionally Informative Gene Panel for DASL, n = `r gse16560$expression %>% filter(tissue_type == 'tumor') %>% nrow` cancer samples), 
+GSE54460 [@Long2014] (RNA sequencing, n = `r gse54460$expression %>% filter(tissue_type == 'tumor') %>% nrow` cancer samples), 
+GSE70768 [@Ross-Adams2015] (Illumina HumanHT-12 V4.0 expression beadchip microarray, n = `r gse70768$expression %>% filter(tissue_type == 'tumor') %>% nrow`), 
+GSE70769 [@Ross-Adams2015] (Illumina HumanHT-12 V4.0 expression beadchip microarray, n = `r gse70769$expression %>% filter(tissue_type == 'tumor') %>% nrow`), and 
+GSE220095 [@Schimmelpfennig2023] (RNA sequencing, n = `r gse220095$expression %>% filter(tissue_type == 'tumor') %>% nrow`) data sets with normalized whole-transcriptome and basic clinical information were fetched from GEO with the `getGEO()` function from the _GEOquery_ package. 
+
+Whole transcriptome expression levels were transformed with the $log_2(expression)$ and $log_2(count + 1)$ function for, respectively, microarray and RNA sequencing data sets, and subjected to adjustment for batch cohort effects with the ComBat algorithm [@Leek2012] (function `multi_process()`, package [_htGLMNET_](https://github.com/PiotrTymoszuk/htGLMNET)). 
+Subsequently, the ComBat-adjusted log2-transformed expression data and clinical information from `r globals$study_labels[geo_pool$studies] %>% collapse_and` data sets was merged into a 'pooled GEO cohort'. 
+The pooled GEO cohort, TCGA, and DKFZ cohorts were used in co-expression network analyses, as well as uni- and multi-parameter modeling of BCR-free survival. 
+In the multi-parameter modeling of BCR-free survival, the pooled GEO cohort was used as the training collective, while the TCGA and DKFZ cohorts were used for model validation. 
+The GSE16560 cohort with all-case mortality information and survival times was used for multi-parameter modeling of overall survival. 
+The models of overall survival were developed in a training portion of the GSE16560 cohort with 2/3 of cancer samples, and validated in the remaining tumor specimens. 
+The training/test cohort split was done with function `createDataPartition()` from _caret_ package. 
+
+Characteristics of the GSE16560, pooled GEO, TCGA, and DKFZ cohort are presented in __Supplementary Table S\@ref(tab:tab-cohorts)__. 
+Characteristics of the GEO data sets that constituted the pooled GEO cohort are listed in __Table \@ref(tab:tab-pool)__. 
+Characteristics of the training and test subsets of the GSE16560 cohort are summarized in __Table \@ref(tab:tab-gse16560)__. 
+The investigated collagen-related genes with their functional classifications are listed in __Table \@ref(tab:tab-genes)__. 
+## Descriptive statistics, statistical hypothesis testing, effect size and statistical significance
+
+Numeric values were referenced as medians with interquartile ranges and ranges. 
+Qualitative variables were presented as percentages and counts of their categories within the complete observation set. 
+Descriptive statistics were computed with function `explore()` from [_ExDA_](https://github.com/PiotrTymoszuk/ExDA) package. 
+
+Differences in numeric variables between two groups were investigated by Mann-Whitney test with r effect size statistic. 
+Differences in numeric variables between three or more groups were assessed by Kruskal-Wallis test with $\eta^2$ effect size statistic. 
+Differences in distribution of categorical variables were assessed by $\chi^2$ test with Cramer's V effect size statistic. 
+Statistical hypothesis testing for differences between analysis groups were investigated with function `compare_variables()` from [_ExDA_](https://github.com/PiotrTymoszuk/ExDA) package and the tool set of [_fastTest_](https://github.com/PiotrTymoszuk/fastTest) package. 
+
+Effect sizes were interpreted as follows [@Cohen2013]: 
+
+* r, weak: 0.1 - 0.3, moderate: 0.3 - 0.5, large: $\geq$ 0.5
+
+* $\eta^2$: weak: 0.02 - 0.13, moderate: 0.13 - 0.26, large: $\geq$ 0.26
+
+* Cramer's V, weak: 0.1 - 0.3, moderate: 0.3 - 0.5, large: $\geq$ 0.5
+
+P values were corrected for multiple testing with the false discovery rate method (FDR) [@Benjamini1995] within each analysis step and cohort. 
+Effects were considered statistically significant for FDR-corrected p values < 0.05.
+
+## Co-expression networks of the collagen-related genes 
+
+Co-expression networks of the collagen-related transcripts were constructed as weighted undirected graphs [@Csardi2006] in the pooled GEO, TCGA, and DKFZ cohorts with `as_iGraph()` function from [_graphExtra_](https://github.com/PiotrTymoszuk/graphExtra) package. 
+The network edges were defined by pairwise correlations between ComBat-adjusted $log_2$-transformed levels of the transcripts with Spearman's $\rho \geq$ 0.5. 
+Isolated vertices of the networks, i.e. transcripts lacking correlations with other transcripts with $\rho \geq$ 0.5, were removed (function `prune_degree()`, package [_graphExtra_](https://github.com/PiotrTymoszuk/graphExtra)). 
+The following vertex importance statistics were computed for the co-expression networks with `summary()` method from [_graphExtra_](https://github.com/PiotrTymoszuk/graphExtra) package called for the graph objects: 
+(1) degree as a measure of connectivity (number of network neighbors, i.e. correlations of the expression levels with $\rho \geq$ 0.5), 
+(2) hub score as a metric of overall correlation strength (eigenvector of the network's affinity matrix), 
+(3) betweenness as a measure of connectivity and centrality (minimum/maximum-scaled number of the shortest paths between the vertex pairs that pass through the vertex of interest), and 
+(4) transitivity as a measure of local network density (probability that the neighbor vertices of a vertex are connected with each other). 
+The vertex importance statistics are summarized in __Supplementary Table S\@ref(tab:tab-nets)__. 
+The co-expression networks were visualized with the Kamada-Kawai algorithm by calling `plot()` method for the co-expression graph objects (package [_graphExtra_](https://github.com/PiotrTymoszuk/graphExtra), modified implementation of _ggnetwork_) [@Briatte2021]. 
+
+## Univariable analysis of BCR-free survival 
+
+The univariable analysis of BCR-free survival for the collagen-related genes was done in the pooled GEO, TCGA, and DKFZ cohorts. 
+For each of the collagen-related transcripts, cancer patients were classified as high and low expressors by cutoffs of ComBat-processed $log_2$-transformed expression levels which corresponded to the largest difference in biochemical relapse-free survival between the expression strata. 
+The minimal size of the expression strata size was set to 25% of the observations; the cutoff search criterion was defined by minimal p value of Mentel-Henszel test. 
+The classification was done with `find_cutoff()` function from [_kmOptimizer_](https://github.com/PiotrTymoszuk/kmOptimizer)) package. 
+
+BCR risk in the high expressors as compared with the low expressors for each of the collagen-related transcripts was modeled by univariable Cox proportional hazard regression (function `coxph()` and `as_coxex()`, packages _survival_ and [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions)) [@Therneau2000]. 
+Hazard ratios (HR) for BCR risk in the high as compared with low expressors with 95% confidence intervals served as the inference statistics of the models. 
+The inference p values ($p(HR = 1)$), were corrected for multiple testing with the FDR method. 
+Accuracy of the model was assessed by 
+Harrell's concordance index [@Harrell1996] (high values are characteristic for high concordance between the predicted and observed BCR risk),  
+overall model calibration and confidence of predictions was gauged by Integrated Brier Score (low values are expected for well calibrated and highly confident models) [@Graf1999]. 
+The inference and model fit metrics were computed by calling `summary()` method from [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions) for the model objects. 
+Genes found to be associated with unfavorable (pFDR < 0.05, HR > 1) or favorable BCR prognosis (pFDR < 0.05, HR < 1) in all three cohorts were considered as standalone markers of BCR prognosis listed in __Supplementary Table S\@ref(tab:tab-uni-bcr)__. 
+
+## Multi-parameter modeling of BCR-free survival
+
+Multi-parameter modeling of BCR-free survival was done in the pooled GEO, TCGA, and DKFZ cohorts with six machine learning algorithms: 
+RIDGE regularized Cox proportional hazard regression [@Simon2011; @Friedman2010], 
+Elastic Net regularized Cox proportional hazard regression [@Simon2011; @Friedman2010; @Zou2005], 
+LASSO regularized Cox proportional hazard regression [@Simon2011; @Tibshirani1996; @Friedman2010], 
+Support Vector Machines (SVM) [@Fouodo2018; @Weston1998], 
+Random Forest [@Breiman2001; @Ishwaran2008; @Ishwaran2022a], and 
+Gradient Boosted Machines (GBM) [@Friedman2001; @Greenwell2022; @Natekin2013; @Friedman2002]. 
+Tuning, training, and predictions of the models were handled by in-house developed wrappers around the respective R implementations of the algorithms in packages _glmnet_, _survivalsvm_, _rfsrc_, and _gbm_.  
+
+BCR-free survival was modeled with the following explanatory variables: 
+
+1. ComBat-adjusted $log_2$-transformed expression levels of the collagen-related transcripts in the tumor tissue provided as first and second order terms (all algorithms)
+
+2. clinical predictors of BCR risk, pathological tumor stage, ISUP grade, and ComBat-adjusted $log_2$ expression levels of the PSA-coding transcript, _KLK3_ as a surrogate of blood PSA concentrations [@Lunger2021; @Boyukozer2020] (GBM algorithm) 
+
+3. ComBat-adjusted $log_2$-transformed expression levels of the collagen-related transcripts (first and second order), pathological tumor stage, ISUP grade, and ComBat-adjusted $log_2$ expression levels of _KLK3_ (GBM algorithm) 
+
+Numeric explanatory variables, i.e. first- and second-order ComBat-adjusted $log_2$ transcript levels were normalized by conversion to Z-scores prior to modeling (function `zScores()`, package [_microViz_](https://github.com/PiotrTymoszuk/microViz)). 
+Because of differences in follow-up times between the training and validation cohorts, the BCR-free survival times were minimum/maximum scaled in each of the cohort (function `minMax()`, package [_microViz_](https://github.com/PiotrTymoszuk/microViz)). 
+
+Selection (tuning) of the optimal set of parameters controlling the model behavior such as regularization, number of learners, or kernel function, was accomplished by minimizing model errors or maximizing concordance indexes for out-of-bag predictions or out-of-fold predictions in cross-validation in the pooled GEO cohort. 
+The tuning criteria and the optimal values of the tunable parameters are summarized in __Supplementary Table S\@ref(tab:tab-tune)__. 
+The survival models were trained in the pooled GEO cohort for the optimal combinations of the tunable parameters. 
+
+For the pooled GEO training cohort, and the TCGA and DKFZ validation collectives, predictor scores were returned by calling `predict()` method for the modeling objects. 
+Next, univariable Cox proportional hazard regression models were constructed with the BCR-free survival as the response and each of the predictor scores as the sole explanatory variable (functions `coxph()` and `as_coxex()`, packages _survival_ and [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions)) [@Therneau2000]. 
+The proportional hazard assumption of the Cox proportional hazard models was checked with the `summary(type = 'assumptions')` method, which implements the genuine `cox.zph()` algorithm [@Grambsch1994]. 
+The Cox proportional hazard models were used for evaluation of machine learning accuracy with Harrell's concordance index [@Harrell1996] and assessment of global calibration with Integrated Brier Score [@Graf1999]. 
+Those performance statistics were computed by calling `summary(type = 'fit')` method from [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions) package for the Cox proportional hazard modeling objects (__Supplementary Table S\@ref(tab:tab-bcr-eval)__). 
+To assess calibration and confidence of BCR risk prediction of the machine learning models, we plotted Brier Scores defined as a mean square difference between the predicted BCR probability and the 0/1-coded observed BCR event [@Brier1950; @Graf1999] for unique survival time points. 
+With this graphical method we evaluated predictions made by the best-performing GBM models (__Supplementary Figure S\@ref(fig:fig-clinic)B__). 
+In addition, ability of the machine learning models to assign PCA patients to low-, intermediate-, and high-risk groups was investigated by comparing BCR-free survival between patients stratified by tertiles of the predictor scores with Kaplan-Meier plots and Peto-Peto test (functions `calibrate.coxex()`, `plot.calibrator()`, and `surv_pvalue()`, packages [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions) and _survminer_) as presented for the GBM models in __Figure 2B__ and __Supplementary Figure \@ref(fig:fig-cl-plot)__. 
+
+Importance of the explanatory variables for the predictive performance of the GBM models in the training pooled GEO cohort were measured with the relative influence method [@Friedman2001] and expressed as gradient of the sum of squared errors attributed to particular variables in the learner ensemble ($\Delta SSE$, __Figure 2C__, __Supplementary Figure S\@ref(fig:fig-clinic)__). 
+
+In order to assess the confounding effect of single studies that constituted the pooled GEO data set on results of modeling of BCR-free survival with the best performing GBM algorithm, three nested Cox proportional hazard models were constructed with the pooled GEO data: 
+(1) a model with study as the sole explanatory variable, 
+(2) a model with normalized (Z-score) GBM linear predictor score as the sole explanatory variable, and 
+(3) an additive full mode with study and normalized GBM linear predictor score as the explanatory variables. 
+Hazard ratio estimates for the study and GBM predictor terms with 95% confidence intervals were extracted from the models with `summary()` method from the [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions) package. 
+Contribution of the data set and GBM predictor terms to the additive model were explored by likelihood ratio test (LRT, method `anova()`, package _stats_). 
+As presented in __Supplementary Figure S\@ref(fig:fig-gbm-cohort)__, adjustment for the study effect did not change the hazard ratio estimate of the GBM term in comparison of inference statistics of the GBM predictor-only and the additive Cox model. 
+Additionally, the highly significant result of the LRT for the GBM predictor term and the non-significant LRT result for the study term indicate that the GBM predictor but not the study effect contributed substantially to the additive model. 
+Collectively, these results let us conclude that prediction of BCR-free survival in the pooled GEO cohort is independent from differences in BCR-free survival between studies that constitute the pooled collective. 
+
+## Multi-parameter modeling of overall survival 
+
+Insufficient number of death cases in the TCGA cohort (n = `r tcga$clinic$death %>% sum(na.rm = TRUE)`) precluded any serious modeling of overall survival. 
+To overcome this limitation, we resorted to the GSE16560 watchful waiting study cohort with long observation times and reliable overall survival data for n = `r nrow(gse16560$clinic)` PCA patients with `r gse16560$clinic$death %>% sum` deceased individuals [@Sboner2010]. 
+This collective was randomly spit into a training and test subset in a 2:1 ratio, and the training portion was used for tuning and training of machine learning models of overall survival employing the algorithms described for the BCR-free survival modeling. 
+The explanatory factors were first- and second-order terms of ComBat-adjusted $log_2$-transformed levels of the collagen-related transcript in the PCA tissue. 
+Those expression variables were converted to Z-scores prior to modeling. 
+The tuning and training process was analogical to the modeling of BCR-free survival (for the best combinations of tunable parameters, see __Supplementary Table S\@ref(tab:tab-os-tune)__). 
+The models were evaluated in the training and test subset of the GSE16560 cohort by computing concordance indexes and Integrated Brier Scores, visual assessment of Brier scores for unique time points, and comparison of overall survival between tertiles of predictor scores as described for the models of BCR-free survival. 
+The model performance metrics are summarized in __Supplementary Table S\@ref(tab:tab-os-eval)__. 
+
+## Data and code availability
+
+Publicly available data sets were analyzed. 
+Formatted data sets used for analyses will be made available upon request to the corresponding author. 
+The R analysis pipeline for the transcriptome data is available from GitHub (https://github.com/PiotrTymoszuk/BCR_collagen).
+
+\newpage
+
+# Supplementary Tables
+
+```{r tab-cohorts, tab.cap = "Characteristic of the analyzed cohorts. Numeric variables are presented as medians with interquartile ranges (IQR) and ranges. Qualitative variables are presented as percentages of categories within the complete observation set."}
+
+flextable::flextable(suppl_tab$cohorts) %>% 
+  set_widths(c(4, rep(3.75, 4))) %>% 
+  merge_v(1) %>% 
+  footnote(1, 1, 
+           value = as_paragraph('PSA: prostate-specific antigen; pT stage: pathological tumor stage; pN stage: pathological lymph node stage; pM stage: pathological metastasis stage; ISUP grade: grading according to the International Society of Urological Pathology.'), 
+           part = 'header', 
+           ref_symbols = 'a') %>%
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-pool, tab.cap = "Characteristic of GEO data sets which constitute the pooled GEO cohort. Numeric variables are presented as medians with interquartile ranges (IQR) and ranges. Qualitative variables are presented as percentages of categories within the complete observation set."}
+
+flextable::flextable(suppl_tab$pool) %>% 
+  set_widths(c(3.5, rep(3.3, 4), 2.2, 2.2)) %>% 
+  footnote(1, 1, 
+           value = as_paragraph('PSA: prostate-specific antigen; pT stage: pathological tumor stage; pN stage: pathological lymph node stage; pM stage: pathological metastasis stage; ISUP grade: grading according to the International Society of Urological Pathology.'), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  footnote(1, 6:7, 
+            value = as_paragraph("Categorical variables: \u03C7\u00B2 test with Cramer's V effect size statistic. Numeric variables: Kruskal-Wallis test with \u03B7\u00B2 effect size statistic. Biochemical relapse-free survival: Peto-Peto test. P values corrected for multiple testing with the false discovery rate method."), 
+            part = 'header', 
+            ref_symbol = 'b') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-gse16560, tab.cap = "Characteristic of the training and test subsets of the GSE16560 cohort. For modeling of overall survival, the GSE16560 cohort was randomly split into a training and a test subset in a  2:1 ratio. Numeric characteristics of the subsets are presented as medians with interquartile ranges (IQR) and ranges. Qualitative variables are presented as percentages of categories within the complete observation set."}
+
+flextable::flextable(suppl_tab$gse16560) %>% 
+  set_widths(c(3.5, 3.5, 3.5, 2.5, 2.5)) %>% 
+  footnote(1, 1, 
+           value = as_paragraph('ISUP grade: grading according to the International Society of Urological Pathology.'), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  footnote(1, 4:5, 
+            value = as_paragraph("Categorical variables: \u03C7\u00B2 test with Cramer's V effect size statistic. Numeric variables: Kruskal-Wallis test with \u03B7\u00B2 effect size statistic. Overall survival: Peto-Peto test. P values corrected for multiple testing with the false discovery rate method."), 
+            part = 'header', 
+            ref_symbol = 'b') %>% 
+  theme_vanilla
+  
+```
+
+\newpage
+
+```{r tab-genes, tab.cap = "Collagen-related genes and their classification."}
+
+flextable::flextable(suppl_tab$genes) %>% 
+  merge_v(1) %>% 
+  italic(j = 2, part = 'body') %>% 
+  set_widths(c(3.5, 3, 3)) %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-nets, tab.cap = "Vertex importance statistics for co-expression networks of the collagen-related transcripts. The co-expression networks were built for in the pooled GEO, TCGA, and DKFZ cohorts for transcripts with pairwise correlation of expression levels with Spearman's rho >= 0.5. Metrics of importance of the vertices of the co-expression networks, degree, hub score, betweenness, and transitivity, were computed. Top five vertices with the largest hub score per cohort are presented. The full table is available as a supplementary Excel file."}
+
+suppl_tab$nets %>% 
+  group_by(Cohort) %>% 
+  slice_max(`Hub score`, n = 5) %>% 
+  ungroup %>% 
+  flextable %>% 
+  merge_v(1) %>% 
+  italic(j = 2) %>% 
+  set_widths(c(2, 2.7, 3.5, rep(2.5, 4))) %>% 
+  footnote(1, 4, 
+           value = as_paragraph("Degree: number of network neighbors, i.e. correlations with Spearman's \u03C1 >= 0.5."), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  footnote(1, 5, 
+           value = as_paragraph("Hub score: eigenvector of the affinity matrix; a metric of the overall correlation strength."), 
+           part = 'header', 
+           ref_symbols = 'b') %>% 
+  footnote(1, 6, 
+           value = as_paragraph('Betweenness: minimum/maximum scaled number of the shortest paths between pairs of network vertices which pass through the vertex of interest; measure of connectivity and centrality.'), 
+           part = 'header', 
+           ref_symbols = 'c') %>% 
+  footnote(1, 7, 
+           value = as_paragraph('Transitivity: probability that the adjacent vertices of a vertex are connected; measure of the local densitiy of the co-expression network.'), 
+           part = 'header', 
+           ref_symbols = 'd') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-uni-bcr, tab.cap = "Univariable analysis of biochemical relapse (BCR) free survival for the collagen-realted transcripts in the pooled GEO, TCGA, and DKFZ cohort. PCA patients were classified as high and low expressors of the collagen-related transcripts by expression cutoffs corresponding to the largest differences in BCR-free survival between the expression strata. BCR risk of high as compared with low expressors was modeled by univariable Cox proportional hazard regression. P values were corrected for multiple testing with the false discovery rate method. The modeling results are shown for the collagen-related genes associated with significant differences in BCR-free survival in all three investigated cohorts. The full analysis is available as a supplementary Excel file."}
+
+suppl_tab$uni_bcr %>% 
+  filter(`Gene symbol` %in% reduce(uni_cut$common_significant, union)) %>% 
+  arrange(`Association with BCR risk`, `Gene symbol`, Cohort) %>% 
+  relocate(`Association with BCR risk`, `Gene symbol`, Cohort) %>% 
+  flextable %>% 
+  merge_v(1:2) %>% 
+  italic(j = 2) %>% 
+  set_widths(c(2, 2, 2, 1.8, rep(2.4, 2), 2.2, 2.3, rep(1.7, 2))) %>% 
+  footnote(1, 7, 
+           value = as_paragraph('Harazd ratio (HR) with 95% confidence intervals (CI).'), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  footnote(1, 9, 
+           value = as_paragraph("C-index: Harrel's concordance index, a measure of model accuracy. High values are expected for a highly accurate model; concordance index = 0.5 is expected for random predictions."), 
+           part = 'header', 
+           ref_symbols = 'b') %>% 
+  footnote(1, 10, 
+           value = as_paragraph('IBS: Integrated Brier Score, a metric of overall model calibration. Low values are expected for a well calibrate model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
+           part = 'header', 
+           ref_symbols = 'c') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-tune, tab.cap = "Selection of the optimal parameters of machine learning models of biochemical relapse (BCR) free survival in the pooled GEO training cohort."}
+
+flextable::flextable(suppl_tab$tune) %>% 
+  set_widths(c(2.7, 6, 6)) %>% 
+  footnote(1, 1, 
+           value = as_paragraph('SVM: Support Vector Machines; GBM: Gradient Boosted Machines.'), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  footnote(1:6, 1, 
+           value = as_paragraph('Explanatory factors: expression levels of the collagen-related transcripts.'), 
+           part = 'body', 
+           ref_symbols = 'b') %>% 
+  footnote(7, 1, 
+           value = as_paragraph('Explanatory factors: pathological tumor stage, ISUP grade, and log2 expression of the PSA coding gene KLK3 in the tumor tissue.'), 
+           part = 'body', 
+           ref_symbols = 'c') %>% 
+  footnote(8, 1, 
+           value = as_paragraph('Explanatory factors: pathological tumor stage, ISUP grade, and log2 expression of the PSA coding gene KLK3 in the tumor tissue, log2 expression of the collagen-related transcripts.'), 
+           part = 'body', 
+           ref_symbols = 'd') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-bcr-eval, tab.cap = "Performance of machine learning models at prediction of biochemical relapse (BCR) free survival."}
+
+flextable::flextable(suppl_tab$bcr_eval) %>% 
+  merge_v(1:2) %>% 
+  set_widths(c(3.5, 2.7, 3.5, rep(2.5, 2))) %>% 
+   footnote(1, 1, 
+           value = as_paragraph('SVM: Support Vector Machines; GBM: Gradient Boosted Machines.'), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  footnote(1:18, 1, 
+           value = as_paragraph('Explanatory factors: expression levels of the collagen-related transcripts.'), 
+           part = 'body', 
+           ref_symbols = 'b') %>% 
+  footnote(19:21, 1, 
+           value = as_paragraph('Explanatory factors: pathological tumor stage, ISUP grade, and log2 expression of the PSA coding gene KLK3 in the tumor tissue.'), 
+           part = 'body', 
+           ref_symbols = 'c') %>% 
+   footnote(22:24, 1, 
+           value = as_paragraph('Explanatory factors: pathological tumor stage, ISUP grade, and log2 expression of the PSA coding gene KLK3 in the tumor tissue, log2 expression of the collagen-related transcripts.'), 
+           part = 'body', 
+           ref_symbols = 'd') %>% 
+  footnote(1, 4, 
+           value = as_paragraph("C-index: Harrel's concordance index, a measure of model accuracy. High values are expected for a highly accurate model; concordance index = 0.5 is expected for random predictions."), 
+           part = 'header', 
+           ref_symbols = 'b') %>% 
+  footnote(1, 5, 
+           value = as_paragraph('IBS: Integrated Brier Score, a metric of overall model calibration. Low values are expected for a well calibrated model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
+           part = 'header', 
+           ref_symbols = 'c') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-os-tune, tab.cap = "Selection of the optimal parameters of machine learning models of overall survival (OS) in the training subset of the GSE16560 cohort. The models used log2 expression of the collagen-related genes as explanatory variables."}
+
+flextable::flextable(suppl_tab$os_tune) %>% 
+  set_widths(c(2.7, 6, 6)) %>% 
+  footnote(1, 1, 
+           value = as_paragraph('SVM: Support Vector Machines; GBM: Gradient Boosted Machines.'), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
+```{r tab-os-eval, tab.cap = "Performance of machine learning models at prediction of overall survival (OS) in the training and test subsets of the GSE16560 cohort. The models used log2 expression of the collagen-related genes as explanatory factors."}
+
+flextable::flextable(suppl_tab$os_eval) %>% 
+  set_widths(c(3.5, 2.7, rep(2.5, 2))) %>% 
+  merge_v(1) %>% 
+  footnote(1, 3, 
+           value = as_paragraph("C-index: Harrell's concordance index, a measure of model accuracy. High values are expected for a highly accurate model; concordance index = 0.5 is expected for random predictions."), 
+           part = 'header', 
+           ref_symbols = 'b') %>% 
+  footnote(1, 4, 
+           value = as_paragraph('IBS: Integrated Brier Score, a metric of overall model calibration. Low values are expected for a well calibrate model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
+           part = 'header', 
+           ref_symbols = 'c') %>% 
+  theme_vanilla
+  
+
+```
+
+\newpage
+
+# Supplementary Figures
+
+```{r fig-nets, fig.width = figur::convert(suppl_fig$nets, to = 'in')$w, fig.height = figur::convert(suppl_fig$nets, to = 'in')$h, fig.cap = 'Co-expression networks of the collagen-related transcripts in PCA tissue.'}
+
+suppl_fig$nets$plot
+
+```
+
+__Supplementary Figure S\@ref(fig:fig-nets). Co-expression networks of the collagen-related transcripts in PCA tissue.__ 
+
+_Co-expression networks of the collagen-related transcripts in PCA were constructed in the pooled GEO (cancer samples: n = `r nrow(net$data$geo_pool)`), TCGA (n = `r nrow(net$data$tcga)`), and DKFZ cohort (n = `r nrow(net$data$dkfz)`). The network edges were defined by pairwise correlations between ComBat-adjusted transcript levels in the cancer tissue with Spearman's $\rho \geq$ 0.5. Isolated vertices, i.e. transcripts without correlation partners, were removed._ 
+_The co-expression networks were visualized with Kamada-Kawai algorithm. Each point represents a single transcript in the network; point color codes for functional classification of the transcript. Edges, i.e. correlations of expression levels with $\rho \geq$ 0.5, are depicted as gray lines. Numbers of transcripts (vertices) and correlations with $\rho \geq$ 0.5 (edges) are displayed in the plot captions._
+
+\newpage
+
+```{r fig-hubs, fig.width = figur::convert(suppl_fig$hubs, to = 'in')$w, fig.height = figur::convert(suppl_fig$hubs, to = 'in')$h, fig.cap = 'Vertex importance statistics for co-expression networks of the collagen-related transcripts in PCA.'}
+
+suppl_fig$hubs$plot
+
+```
+
+__Supplementary Figure S\@ref(fig:fig-hubs). Vertex importance statistics for co-expression networks of the collagen-related transcripts in PCA.__ 
+
+_Co-expression networks of the collagen-related transcripts were constructed in the pooled GEO (cancer samples: n = `r nrow(net$data$geo_pool)`), TCGA (n = `r nrow(net$data$tcga)`), and DKFZ cohort (n = `r nrow(net$data$dkfz)`) as presented in Supplementary Figure S\@ref(fig:fig-nets)._ 
+_The following numeric statistics of vertex importance were computed for each collagen-related transcript: degree as a measure of connectivity (number of correlation partners with Spearman's $\rho \geq$ 0.5), hub score as a measure of overall correlation strength (eigenvector of the affinity matrix), and betweenness as a measure of connectivity and centrality (minimum/maximum-scaled number of the shortest paths between all pairs of vertices that pass through the vertex of interest)._ 
+_The vertex importance metrics for the collagen-related transcripts in the co-expression networks are shown in dot plots. Each point represents a single collagen-related transcript, point color codes for functional classification of the transcript._
+
+\newpage
+
+```{r fig-km-unfavorable, fig.width = figur::convert(suppl_fig$km_unfavorable, to = 'in')$w, fig.height = figur::convert(suppl_fig$km_unfavorable, to = 'in')$h, fig.cap = 'Top three unfavorable standalone collagen-related transcriptional markers of BCR-free survival in PCA.'}
+
+suppl_fig$km_unfavorable$plot
+
+```
+
+__Supplementary Figure S\@ref(fig:fig-km-unfavorable). Top three unfavorable standalone collagen-related transcriptional markers of BCR-free survival in PCA.__ 
+
+_Prostate cancer (PCA) patients in the pooled GEO (total: n = `r uni_globals$n_numbers$n_total["geo_pool"]`, biochemical relapse [BCR]: n = `r uni_globals$n_numbers$n_events["geo_pool"]`), TCGA (total: n = `r uni_globals$n_numbers$n_total["tcga"]`, BCR: n = `r uni_globals$n_numbers$n_events["tcga"]`), and DKFZ cohort (total: n = `r uni_globals$n_numbers$n_total["dkfz"]`, BCR: n = `r uni_globals$n_numbers$n_events["dkfz"]`) were classified as high and low expressors for each of the `r length(globals$genes)` collagen-related transcripts with the expression cutoffs corresponding to the largest differences in survival between the high and low expressors._ 
+_Collagen-related transcripts associated with unfavorable and favorable BCR prognosis were identified by univariable Cox proportional hazard regression as presented in Figure 1._ 
+_COL1A1, COL11A1, and COL11A2 were identified as the strongest unfavorable BCR risk markers, as metered by mean Harrell's concordance index (measure of model accuracy) in the investigated cohorts. Fractions of BCR-free patients in the high and low expression strata are visualized in Kaplan-Meier plots. The log2 expression cutoffs used for the high/low expressor classification, hazard-ratios (HR) of BCR risk in the high as compared with the low expression strata with 95% confidence intervals (95% CI) are displayed in the plot captions. P values corrected for multiple testing with the false discovery rate method are shown in the plots. Numbers of patients and BCR cases in the expression strata are indicated in the plot legends._
+
+\newpage
+
+```{r fig-km-favorable, fig.width = figur::convert(suppl_fig$km_favorable, to = 'in')$w, fig.height = figur::convert(suppl_fig$km_favorable, to = 'in')$h, fig.cap = 'Top three favorable standalone collagen-related transcriptional markers of BCR-free survival in PCA.'}
+
+suppl_fig$km_favorable$plot
+
+```
+
+__Supplementary Figure S\@ref(fig:fig-km-favorable). Top three favorable standalone collagen-related transcriptional markers of BCR-free survival in PCA.__ 
+
+_Prostate cancer (PCA) patients in the pooled GEO (total: n = `r uni_globals$n_numbers$n_total["geo_pool"]`, biochemical relapse [BCR]: n = `r uni_globals$n_numbers$n_events["geo_pool"]`), TCGA (total: n = `r uni_globals$n_numbers$n_total["tcga"]`, BCR: n = `r uni_globals$n_numbers$n_events["tcga"]`), and DKFZ cohort (total: n = `r uni_globals$n_numbers$n_total["dkfz"]`, BCR: n = `r uni_globals$n_numbers$n_events["dkfz"]`) were classified as high and low expressors for each of the `r length(globals$genes)` collagen-related transcripts with the expression cutoffs corresponding to the largest differences in survival between the high and low expressors._ 
+_Collagen-related transcripts associated with unfavorable and favorable BCR prognosis were identified by univariable Cox proportional hazard regression as presented in Figure 1._ 
+_COL4A6, LAMB3, and DST were identified as the strongest favorable BCR risk markers, as measured by mean Harrell's concordance index (measure of model accuracy) in the investigated cohorts. Fractions of BCR-free patients in the high and low expression strata are visualized in Kaplan-Meier plots. The log2 expression cutoffs used for the high/low expressor classification, hazard-ratios (HR) of BCR risk in the high as compared with the low expression strata with 95% confidence intervals (95% CI) are displayed in the plot captions. P values corrected for multiple testing with the false discovery rate method are shown in the plots. Numbers of patients and BCR cases in the expression strata are indicated in the plot legends._
+
+\newpage
+
+```{r fig-gbm-cohort, fig.width = figur::convert(suppl_fig$gbm_cohort, to = 'in')$w, fig.height = figur::convert(suppl_fig$gbm_cohort, to = 'in')$h, fig.cap = 'Investigation of the confounding study effect of the cohort on prediction of BCR-free survival by the GBM model in the pooled GEO cohort.'}
+
+suppl_fig$gbm_cohort$plot
+
+```
+
+__Figure \@ref(fig:fig-gbm-cohort). Investigation of confounding study effect on prediction of BCR-free survival by the GBM model in the pooled GEO cohort.__ 
+
+_Biochemical relapse (BCR) free survival was modeled by the GBM algorithm with ComBat-adjusted $log_2$-transformed expression levels of the collagen-related genes as explanatory factors. The Gradient Boosted Machines (GBM) model was trained in the pooled GEO cohort (total: n = `r surv_globals$n_numbers$n_total[1]`, BCR: n = `r surv_globals$n_numbers$n_events[1]`)._ 
+_To investigate if and to which extend the BCR risk prediction depends on the confounding effect of single studies constituting the pooled GEO cohort (`r globals$study_labels[geo_pool$studies] %>% collapse_and`), we constructed a canonical Cox proportional hazard regression model of BCR-free survival with the GBM predictor score and assignment to the study as independent variables. Inference of this data set-adjusted GBM model was compared with inference of the initial GBM model._ 
+
+_Coefficient estimates expressed as hazard ratios (HR) with 95% confidence intervals of the study-adjusted, the initial and the study-only survival models are presented in a Forest plot. Significance of contribution of the study and GBM predictor score to the BCR-free survival prediction were assessed by likelihood ratio test (LRT), whose results are presented in the plot facets. Note the significant contribution of the GBM predictor score to the prediction of BCR-free survival and the non-significant effect of the study._
+
+\newpage
+
+```{r fig-clinic, fig.width = figur::convert(suppl_fig$clinic, to = 'in')$w, fig.height = figur::convert(suppl_fig$clinic, to = 'in')$h, fig.cap = 'Modeling of BCR-free survival by GBM algorithm with clinical predictors and mRNA expression of the collagen-related genes.'}
+
+suppl_fig$clinic$plot
+
+```
+
+__Figure \@ref(fig:fig-clinic). Modeling of BCR-free survival by GBM algorithm with clinical predictors and mRNA expression of the collagen-related genes.__ 
+
+_Three Gradient Boosted Machines (GBM) models of biochemical relapse (BCR) free survival were trained in the pooled GEO cohort: a model with clinical predictors (age, pathological tumor stage, ISUP grade, and tumor tissue expression of KLK3 transcript coding for PSA protein), a model with ComBat-adjusted $log_2$ expression levels of the collagen-related transcripts, and a model with the clinical and transcriptomic predictors. Performance of the GBM models was evaluated in the pooled GEO training collective (total: n = `r nrow(surv_clin$score_tbl$geo_pool)`, BCR: n = `r sum(surv_clin$score_tbl$geo_pool$relapse)`), and TCGA (total: n = `r nrow(surv_clin$score_tbl$tcga)`, BCR: n = `r sum(surv_clin$score_tbl$tcga$relapse)`) and DKFZ (total: n = `r nrow(surv_clin$score_tbl$dkfz)`, BCR: n = `r sum(surv_clin$score_tbl$dkfz$relapse)`) validation cohorts._
+
+_(A) Numeric metrics of survival model performance, Harrell's concordance index (C-index, measure of model accuracy) and Integrated Brier Score (IBS, measure of overall calibration, low values are characteristic for well calibrated models), are presented in a dot plot. Each point represents a single GBM model, point color codes for the model type. Models in the same cohort are connected with lines. Note the substantial improvement of the GBM model accuracy and calibration upon inclusion of the collagen-related transcript expression levels in the explanatory variable set in the pooled GEO and DKFZ cohorts._
+
+_(B) Brier Scores for unique survival time points for the GBM models in the pooled GEO, TCGA, and DKFZ cohort. Low Brier Scores at a particular time point indicate accurate and confident prediction of the BCR risk. Note: gray lines represent random survival predictions by a null model._
+
+_(C) Importance of the explanatory variables for BCR risk prediction by the GBM model with the clinical and transcriptional predictors. The variable importance was computed as difference in sum of squared error ($\Delta SSE$) attributed to inclusion of a particular explanatory factor in the GBM learner ensemble. High $\Delta SSE$ values are characteristic for highly influential variables. $\Delta SSE$ values for the variables that contributed substantially to the BCR risk prediction ($\Delta SSE$ > 0) are presented in a bar plot._
+
+\newpage
+
+```{r fig-cl-plot, fig.width = figur::convert(suppl_fig$cl_plot, to = 'in')$w, fig.height = figur::convert(suppl_fig$cl_plot, to = 'in')$h, fig.cap = 'GBM modeling of BCR-free survival in PCA with clinical prediction and expression of collagen-related transcripts: survival in tertiles of predictor scores.'}
+
+suppl_fig$cl_plot$plot
+
+```
+
+__Figure \@ref(fig:fig-cl-plot). GBM modeling of BCR-free survival in PCA with clinical prediction and expression of collagen-related transcripts: survival in tertiles of predictor scores.__ 
+
+_Three Gradient Boosted Machines (GBM) models of biochemical relapse (BCR) free survival were trained in the pooled GEO cohort: a model with clinical predictors (age, pathological tumor stage, ISUP grade, and expression of KLK3 transcript coding for PSA protein), a model with ComBat-adjusted $log_2$ expression levels of the collagen-related transcripts, and a model with the clinical and transcriptomic predictors, as presented in Supplementary Figure S\@ref(fig:fig-cl-plot)._ 
+_BCR-free survival in tertiles of the predictor scores of the clinical-only and the combined clinical - expression GBM models was visualized with Kaplan-Meier plots. Numbers of patients and BCR cases in the predictor score tertiles are indicated in the figure legend. P values for differences in survival between the tertiles obtained by Peto-Peto test are displayed in the plots. Note improved resolution of the survival curves for the combined clinical/expression model as compared with the clinical-only model in the pooled GEO and DKFZ cohort._ 
+
+\newpage
+
+```{r fig-os, fig.width = figur::convert(suppl_fig$os, to = 'in')$w, fig.height = figur::convert(suppl_fig$os, to = 'in')$h, fig.cap = 'Modeling of overall survival in PCA with expression levels of the collagen-related transcripts as explanatory factors.'}
+
+suppl_fig$os$plot
+
+```
+
+__Figure \@ref(fig:fig-os). Modeling of overall survival in PCA with expression levels of the collagen-related transcripts as explanatory factors.__ 
+
+_Overall survival in prostate cancer (PCA) was modeled by multi-parameter machine learning models with ComBat-processed $log_2$-transformed expression levels of `r length(globals$genes)` collagen-related transcripts as explanatory factors._ 
+_The models were trained in the training subset of the GSE16560 cohort with six machine learning algorithms (RIDGE Cox regression, Elastic Net Cox regression, LASSO Cox regression, survival Support Vector Machines [SVM], survival Random Forest, and survival Gradient Boosted Machines [GBM])._
+_Performance of the models was evaluated in the training (total patients: n = `r nrow(ridge_os$score_tbl$training)`, deaths: n = `r sum(ridge_os$score_tbl$training$death)`) and test (total patients: n = `r nrow(ridge_os$score_tbl$test)`, deaths: n = `r sum(ridge_os$score_tbl$test$death)`) subsets of the GSE16560 cohort._ 
+
+_(A) Metrics of performance of the survival models, Harrell's concordance index (C-index, measure of model accuracy) and Integrated Brier Score (IBS, measure of overall model calibration, low values are characteristic for good calibration), are presented in dot plots. Dashed lines represent C-index and IBS values expected for random death risk prediction. Note the superior accuracy and calibration of the GBM model in the validation collectives._
+
+_(B) Brier Scores for unique survival time points for the best performing RIDGE Cox model. Low Brier Scores at a particular time point indicate accurate and confident prediction of the BCR risk. Note: gray lines represent random survival predictions by a null model._
+
+_(C) Overall survival of PCA patients stratified by tertiles of the predictor scores of the best performing RIDGE Cox model. Statistical significance of differences between the predictor score tertiles was determined by Peto-Peto test corrected for multiple testing wit the false discovery rate method. Fractions of alive patients and time after diagnosis are visualized in Kaplan-Meier plots. Numbers of patients and deaths in the predictor score tertiles are indicated in the legends. P values are displayed in the plots._ 
+
+\newpage
+
+# References
