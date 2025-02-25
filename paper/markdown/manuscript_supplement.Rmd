@@ -77,8 +77,10 @@ _rfsrc_ [@Ishwaran2008; @Ishwaran2022a] (Random Forest),
 _gbm_ [@Greenwell2022] (Gradient Boosted Machines [GBM]), 
 _survival_ [@Therneau2000], 
 _surviminer_ [@Kassambara2016],  
-[_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions), and 
-_caret_ [@Kuhn2008]. 
+[_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions), 
+_caret_ [@Kuhn2008], and 
+_survivalROC_ [@Heagerty2000; @Heagerty2022].
+
 Univariable analysis of relapse-free survival was accomplished with packages [_kmOptimizer_](https://github.com/PiotrTymoszuk/kmOptimizer'), _survival_, _survminer_ and [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions). 
 
 For visualization of the results, the packages 
@@ -199,7 +201,10 @@ The Cox proportional hazard models were used for evaluation of machine learning 
 Those performance statistics were computed by calling `summary(type = 'fit')` method from [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions) package for the Cox proportional hazard modeling objects (__Supplementary Table S\@ref(tab:tab-bcr-eval)__). 
 To assess calibration and confidence of BCR risk prediction of the machine learning models, we plotted Brier Scores defined as a mean square difference between the predicted BCR probability and the 0/1-coded observed BCR event [@Brier1950; @Graf1999] for unique survival time points. 
 With this graphical method we evaluated predictions made by the best-performing GBM models (__Supplementary Figure S\@ref(fig:fig-clinic)B__). 
-In addition, ability of the machine learning models to assign PCA patients to low-, intermediate-, and high-risk groups was investigated by comparing BCR-free survival between patients stratified by tertiles of the predictor scores with Kaplan-Meier plots and Peto-Peto test (functions `calibrate.coxex()`, `plot.calibrator()`, and `surv_pvalue()`, packages [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions) and _survminer_) as presented for the GBM models in __Figure 2B__ and __Supplementary Figure \@ref(fig:fig-cl-plot)__. 
+Ability of the machine learning models to assign PCA patients to low-, intermediate-, and high-risk groups was investigated by comparing BCR-free survival between patients stratified by tertiles of the predictor scores with Kaplan-Meier plots and Peto-Peto test (functions `calibrate.coxex()`, `plot.calibrator()`, and `surv_pvalue()`, packages [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions) and _survminer_) as presented for the GBM models in __Figure 2B__ and __Supplementary Figure \@ref(fig:fig-cl-plot)__. 
+Prediction of BCR at one, two, three, and five years after diagnosis by the GBM models was assessed by receiver-operating characteristic (ROC) with area under the curve (AUC) as a metric of prediction accuracy, sensitivity, and specificity. 
+The ROC analysis was performed for predictor scores of the GBM models as marker variables with the nearest-neighbor algorithm proposed by Heagerty et al. [@Heagerty2000; @Heagerty2022] (function `survivalROC()`, package _survivalROC_). 
+The ROC AUC values are outlined in __Supplementary Table S\@ref(tab:tab-roc)__. 
 
 Importance of the explanatory variables for the predictive performance of the GBM models in the training pooled GEO cohort were measured with the relative influence method [@Friedman2001] and expressed as gradient of the sum of squared errors attributed to particular variables in the learner ensemble ($\Delta SSE$, __Figure 2C__, __Supplementary Figure S\@ref(fig:fig-clinic)__). 
 
@@ -418,6 +423,25 @@ flextable::flextable(suppl_tab$bcr_eval) %>%
 
 \newpage
 
+```{r tab-roc, tab.cap = "Prediction of biochemical relapse (BCR) at one, two, three, and five year after diagnosis by gradient boosted models employing clinical predictors and expression of the collagen-related transcripts as explanatory factors."}
+
+flextable::flextable(suppl_tab$roc) %>% 
+  merge_v(1:2) %>% 
+  set_widths(c(2.5, 2.3, 4, rep(2.5, 3))) %>% 
+  footnote(1, 3, 
+            value = as_paragraph('GBM, expression, explanatory factors: expression levels of the collagen-related transcripts; GBM, clinic, explanatory factors: pathological tumor stage, ISUP grade, and log2 expression of the PSA coding gene KLK3 in the tumor tissue; GBM, clinic + expression: pathological tumor stage, ISUP grade, and log2 expression of the PSA coding gene KLK3 in the tumor tissue, log2 expression of the collagen-related transcripts.'), 
+           part = 'header', 
+           ref_symbols = 'a') %>% 
+  footnote(1, 6, 
+           value = as_paragraph('ROC AUC: area under the curve of receiver-operating characteristic.'), 
+           part = 'header', 
+           ref_symbols = 'b') %>% 
+  theme_vanilla
+
+```
+
+\newpage
+
 ```{r tab-os-tune, tab.cap = "Selection of the optimal parameters of machine learning models of overall survival (OS) in the training subset of the GSE16560 cohort. The models used log2 expression of the collagen-related genes as explanatory variables."}
 
 flextable::flextable(suppl_tab$os_tune) %>% 
@@ -515,7 +539,7 @@ suppl_fig$gbm_cohort$plot
 
 ```
 
-__Figure \@ref(fig:fig-gbm-cohort). Investigation of confounding study effect on prediction of BCR-free survival by the GBM model in the pooled GEO cohort.__ 
+__Supplementary Figure S\@ref(fig:fig-gbm-cohort). Investigation of confounding study effect on prediction of BCR-free survival by the GBM model in the pooled GEO cohort.__ 
 
 _Biochemical relapse (BCR) free survival was modeled by the GBM algorithm with ComBat-adjusted $log_2$-transformed expression levels of the collagen-related genes as explanatory factors. The Gradient Boosted Machines (GBM) model was trained in the pooled GEO cohort (total: n = `r surv_globals$n_numbers$n_total[1]`, BCR: n = `r surv_globals$n_numbers$n_events[1]`)._ 
 _To investigate if and to which extend the BCR risk prediction depends on the confounding effect of single studies constituting the pooled GEO cohort (`r globals$study_labels[geo_pool$studies] %>% collapse_and`), we constructed a canonical Cox proportional hazard regression model of BCR-free survival with the GBM predictor score and assignment to the study as independent variables. Inference of this data set-adjusted GBM model was compared with inference of the initial GBM model._ 
@@ -530,7 +554,7 @@ suppl_fig$clinic$plot
 
 ```
 
-__Figure \@ref(fig:fig-clinic). Modeling of BCR-free survival by GBM algorithm with clinical predictors and mRNA expression of the collagen-related genes.__ 
+__Supplementary Figure S\@ref(fig:fig-clinic). Modeling of BCR-free survival by GBM algorithm with clinical predictors and mRNA expression of the collagen-related genes.__ 
 
 _Three Gradient Boosted Machines (GBM) models of biochemical relapse (BCR) free survival were trained in the pooled GEO cohort: a model with clinical predictors (age, pathological tumor stage, ISUP grade, and tumor tissue expression of KLK3 transcript coding for PSA protein), a model with ComBat-adjusted $log_2$ expression levels of the collagen-related transcripts, and a model with the clinical and transcriptomic predictors. Performance of the GBM models was evaluated in the pooled GEO training collective (total: n = `r nrow(surv_clin$score_tbl$geo_pool)`, BCR: n = `r sum(surv_clin$score_tbl$geo_pool$relapse)`), and TCGA (total: n = `r nrow(surv_clin$score_tbl$tcga)`, BCR: n = `r sum(surv_clin$score_tbl$tcga$relapse)`) and DKFZ (total: n = `r nrow(surv_clin$score_tbl$dkfz)`, BCR: n = `r sum(surv_clin$score_tbl$dkfz$relapse)`) validation cohorts._
 
@@ -542,16 +566,49 @@ _(C) Importance of the explanatory variables for BCR risk prediction by the GBM 
 
 \newpage
 
-```{r fig-cl-plot, fig.width = figur::convert(suppl_fig$cl_plot, to = 'in')$w, fig.height = figur::convert(suppl_fig$cl_plot, to = 'in')$h, fig.cap = 'GBM modeling of BCR-free survival in PCA with clinical prediction and expression of collagen-related transcripts: survival in tertiles of predictor scores.'}
+```{r fig-cl-plot, fig.width = figur::convert(suppl_fig$cl_plot, to = 'in')$w, fig.height = figur::convert(suppl_fig$cl_plot, to = 'in')$h, fig.cap = 'GBM modeling of BCR-free survival in PCA with clinical predictors and expression of collagen-related transcripts: survival in tertiles of predictor scores.'}
 
 suppl_fig$cl_plot$plot
 
 ```
 
-__Figure \@ref(fig:fig-cl-plot). GBM modeling of BCR-free survival in PCA with clinical prediction and expression of collagen-related transcripts: survival in tertiles of predictor scores.__ 
+__Supplementary Figure S\@ref(fig:fig-cl-plot). GBM modeling of BCR-free survival in PCA with clinical predictors and expression of collagen-related transcripts: survival in tertiles of predictor scores.__ 
 
-_Three Gradient Boosted Machines (GBM) models of biochemical relapse (BCR) free survival were trained in the pooled GEO cohort: a model with clinical predictors (age, pathological tumor stage, ISUP grade, and expression of KLK3 transcript coding for PSA protein), a model with ComBat-adjusted $log_2$ expression levels of the collagen-related transcripts, and a model with the clinical and transcriptomic predictors, as presented in Supplementary Figure S\@ref(fig:fig-cl-plot)._ 
+_Three Gradient Boosted Machines (GBM) models of biochemical relapse (BCR) free survival were trained in the pooled GEO cohort: a model with clinical predictors (age, pathological tumor stage, ISUP grade, and expression of KLK3 transcript coding for PSA protein), a model with ComBat-adjusted $log_2$ expression levels of the collagen-related transcripts, and a model with the clinical and transcriptomic predictors, as presented in Supplementary Figure S\@ref(fig:fig-clinic)._ 
+
 _BCR-free survival in tertiles of the predictor scores of the clinical-only and the combined clinical - expression GBM models was visualized with Kaplan-Meier plots. Numbers of patients and BCR cases in the predictor score tertiles are indicated in the figure legend. P values for differences in survival between the tertiles obtained by Peto-Peto test are displayed in the plots. Note improved resolution of the survival curves for the combined clinical/expression model as compared with the clinical-only model in the pooled GEO and DKFZ cohort._ 
+
+\newpage
+
+```{r fig-cl-iference, fig.width = figur::convert(suppl_fig$cl_inference, to = 'in')$w, fig.height = figur::convert(suppl_fig$cl_inference, to = 'in')$h, fig.cap = 'GBM modeling of BCR-free survival in PCA with clinical predictors and expression of collagen-related transcripts: inference.'}
+
+suppl_fig$cl_inference$plot
+
+```
+
+__Supplementary Figure S\@ref(fig:fig-cl-iference). GBM modeling of BCR-free survival in PCA with clinical predictors and expression of collagen-related transcripts: inference.__ 
+
+_Three Gradient Boosted Machines (GBM) models of biochemical relapse (BCR) free survival were trained in the pooled GEO cohort: a model with clinical predictors (age, pathological tumor stage, ISUP grade, and expression of KLK3 transcript coding for PSA protein), a model with ComBat-adjusted $log_2$ expression levels of the collagen-related transcripts, and a model with the clinical and transcriptomic predictors, as presented in Supplementary Figure S\@ref(fig:fig-clinic)._ 
+
+_Predictor scores of the GBM models were computed for the training collective, and the TCGA and DKFZ validation cohorts. Subsequently, univariable Cox proportional hazard models of BCR-free survival were constructed with normalized values of the predictor scores (Z-scores) as explanatory factors. Inference statistics of those Cox proportional hazard models, hazard ratios (HR) with 95% confidence intervals (95%CI),m are presented in a Forest plot._
+
+\newpage
+
+```{r fig-roc, fig.width = figur::convert(suppl_fig$roc, to = 'in')$w, fig.height = figur::convert(suppl_fig$roc, to = 'in')$h, fig.cap = 'GBM modeling of BCR-free survival in PCA with clinical predictors and expression of collagen-related transcripts: prediction of BCR.'}
+
+suppl_fig$roc$plot
+
+```
+
+__Supplementary Figure S\@ref(fig:fig-roc). GBM modeling of BCR-free survival in PCA with clinical predictors and expression of collagen-related transcripts: prediction of BCR.__ 
+
+_Three Gradient Boosted Machines (GBM) models of biochemical relapse (BCR) free survival were trained in the pooled GEO cohort: a model with clinical predictors (age, pathological tumor stage, ISUP grade, and expression of KLK3 transcript coding for PSA protein), a model with ComBat-adjusted $log_2$ expression levels of the collagen-related transcripts, and a model with the clinical and transcriptomic predictors, as presented in Supplementary Figure S\@ref(fig:fig-clinic)._ 
+
+_Ability of the GBM models to predict BCR at one, two, three, and five years after diagnosis in the pooled GEO training cohort, and the TCGA and DKFZ validation collectives was investigated by receiver-operating characteristic (ROC) with are under the curve (AUC) as a metric of accuracy, sensitivity, and specificity._ 
+
+_(A) Values of AUC or prediction of BCR at one, two, three, and five years after diagnosis presented in a dot plot. Each point represents a single time point. Values obtained with the same survival model are connected with lines._
+
+_(B) ROC curves for prediction of BCR at one, two, three, and five years after diagnosis (TR: true positive, FP: false positive). color of the curve represents the survival model. AUC values are indicated in the plots. Total numbers of patients in the modeling data and numbers of BCR cases at the time point are displayed in the plot captions._
 
 \newpage
 
@@ -561,7 +618,7 @@ suppl_fig$os$plot
 
 ```
 
-__Figure \@ref(fig:fig-os). Modeling of overall survival in PCA with expression levels of the collagen-related transcripts as explanatory factors.__ 
+__Supplementary Figure S\@ref(fig:fig-os). Modeling of overall survival in PCA with expression levels of the collagen-related transcripts as explanatory factors.__ 
 
 _Overall survival in prostate cancer (PCA) was modeled by multi-parameter machine learning models with ComBat-processed $log_2$-transformed expression levels of `r length(globals$genes)` collagen-related transcripts as explanatory factors._ 
 _The models were trained in the training subset of the GSE16560 cohort with six machine learning algorithms (RIDGE Cox regression, Elastic Net Cox regression, LASSO Cox regression, survival Support Vector Machines [SVM], survival Random Forest, and survival Gradient Boosted Machines [GBM])._

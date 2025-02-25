@@ -35,8 +35,7 @@
     map(select, sample_id, relapse, rfs_months) %>% 
     map(mutate, 
         rfs_months = rfs_months + 1, 
-        scaled_rfs_months = minMax(rfs_months) + 0.01) %>% 
-    map(select, -rfs_months)
+        scaled_rfs_months = minMax(rfs_months) + 0.01)
   
   ## genes of interest: first and second order terms
   

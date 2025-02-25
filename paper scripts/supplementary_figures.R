@@ -179,11 +179,62 @@
     as_figure(label = 'bcr_survival_gbm_clinic_expression_km_plots', 
               ref_name = 'cl_plot', 
               caption = paste('GBM modeling of BCR-free survival in PCA with', 
-                              'clinical prediction and expression of', 
+                              'clinical predictors and expression of', 
                               'collagen-related transcripts:', 
                               'survival in tertiles of predictor scores.'), 
               w = 180, 
               h = 220)
+  
+# Inference, normalized HR, for the GBM models of BCR -------
+  
+  insert_msg('Inference of the GBM models')
+  
+  suppl_fig$cl_inference <- 
+    as_figure(surv_clplots$inference_plot + 
+                theme(legend.position = 'none'), 
+              label = 'bcr_survival_gbm_clinic_expression_inference', 
+              ref_name = 'cl_iference', 
+              caption =  paste('GBM modeling of BCR-free survival in PCA with', 
+                               'clinical predictors and expression of', 
+                               'collagen-related transcripts: inference.'), 
+              w = 100, 
+              h = 100)
+  
+# ROC, prediction of BCR at particular time points -------
+  
+  insert_msg('ROC for BCR prediction')
+  
+  ## upper panel: summary plot
+  
+  suppl_fig$roc$upper <- surv_clplots$auc_summary
+  
+  ## bottom panel: ROC curves for selected time points
+  
+  suppl_fig$roc$bottom <- 
+    surv_clplots$roc_plots[c("time_12", "time_36", "time_60")] %>% 
+    unlist(recursive = FALSE) %>% 
+    map(~.x + theme(legend.position = 'none')) %>% 
+    plot_grid(plotlist = ., 
+              ncol = 3, 
+              align = 'hv', 
+              axis = 'tblr')
+  
+  ## the entire figure
+  
+  suppl_fig$roc <- 
+    plot_grid(suppl_fig$roc$upper, 
+              suppl_fig$roc$bottom, 
+              nrow = 2, 
+              rel_heights = c(1, 3), 
+              labels = LETTERS, 
+              label_size = 10) %>% 
+    as_figure(label = 'bcr_survival_gbm_clinic_expression_roc', 
+              ref_name = 'roc', 
+              caption =  paste('GBM modeling of BCR-free survival in PCA with', 
+                               'clinical predictors and expression of', 
+                               'collagen-related transcripts: prediction of BCR.'), 
+              w = 190, 
+              h = 230)
   
 # Modeling of overall survival in the GSE16560 cohort -------
   

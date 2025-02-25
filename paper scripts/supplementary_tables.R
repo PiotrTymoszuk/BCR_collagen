@@ -274,6 +274,32 @@
                                'prediction of biochemical relapse (BCR) free', 
                                'survival.'))
   
+# AUC for prediction of BCR by the GBM models -----
+  
+  insert_msg('AUC for predicion of BCR at selected time points')
+  
+  suppl_tab$roc <- surv_roc$roc_obj %>% 
+    map(map, ~.x$stats) %>% 
+    map(compress, names_to = 'cohort') %>% 
+    reduce(rbind) %>% 
+    filter(stri_detect(algorithm, regex = '^gbm')) %>% 
+    transmute(`Time after diagnosis, months` = predict_time, 
+              Cohort = globals$study_labels[cohort], 
+              `Model` = surv_clplots$algo_labels[algorithm], 
+              `Total patients, N` = n_total, 
+              `Fraction of BCR` = signif(1 - survival_rate, 2), 
+              `ROC AUC` = signif(auc, 2))
+  
+  suppl_tab$roc <- suppl_tab$roc %>% 
+    as_mdtable(label = 'roc', 
+                ref_name = 'roc', 
+               caption = paste('Prediction of biochemical relapse (BCR) at', 
+                               'one, two, three, and five year after diagnosis', 
+                               'by gradient boosted models employing clinical', 
+                               'predictors and expression of the', 
+                               'collagen-related transcrips as', 
+                               'explanatory factors.'))
+  
 # tuning parameters for the models of overall survival --------
   
   insert_msg('Tuning parameters for the models of overall survival')

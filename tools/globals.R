@@ -212,7 +212,7 @@
       svm = 'gray60', 
       rf = 'darkolivegreen', 
       gbm = 'orangered2', 
-      gbm_clinic = 'aquamarine3', 
+      gbm_clinic = 'aquamarine4', 
       gbm_combi = 'firebrick4')
   
   ## comparison of the collagen models with survival models

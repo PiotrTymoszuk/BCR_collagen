@@ -15,6 +15,7 @@
   library(ggrepel)
   library(caret)
   library(figur)
+  library(survivalROC)
 
 # data import ------
 
@@ -414,6 +415,154 @@
       relocate(gene_symbol, cutoff)
 
   } 
+  
+# ROC analysis for survival time points ----------
+  
+  surv_roc_times <- function(data_lst,
+                             time_variable = 'rfs_months', 
+                             status_variable = 'relapse', 
+                             marker_variable = 'predictor_score', 
+                             predict_time = 12, ...) {
+    
+    ## ROC for survival at a given time point for 
+    ## a list of data frames with predictor scores
+    
+    data_lst <- data_lst %>% 
+      map(~filter(.x, complete.cases(.x)))
+    
+    roc_lst <- data_lst %>% 
+      future_map(function(x) survivalROC(Stime = x[[time_variable]], 
+                                         status = x[[status_variable]], 
+                                         marker = x[[marker_variable]], 
+                                         predict.time = predict_time, ...), 
+                 .options = furrr_options(seed = TRUE))
+    
+    ## extraction of AUC statistics, n_numbers and survival rates
+    
+    stats <- data_lst %>% 
+      map_dbl(nrow) %>% 
+      compress(names_to = 'algorithm', 
+               values_to = 'n_total')
+    
+    stats <- stats %>% 
+      mutate(predict_time = predict_time, 
+             survival_rate = map_dbl(roc_lst, ~.x$Survival), 
+             auc = map_dbl(roc_lst, ~.x$AUC))
+    
+    ## extraction of the cut points, true positives (TP), 
+    ## and false positives (FP)
+    
+    cut_data <- roc_lst %>% 
+      map(~.x[c('cut.values', 'TP', 'FP')]) %>% 
+      map(as_tibble) %>% 
+      compress(names_to = 'algorithm')
+    
+    ## output of the stats and ROC cut points, the later will be used for 
+    ## ROC plots
+    
+    list(stats = stats, 
+         cuts = cut_data)
+    
+  }
+  
+  plot_surv_roc_times <- function(roc_obj, 
+                                  plot_title_prefix = 'BCR', 
+                                  plot_title_suffix = NULL, 
+                                  palette = globals$algo_colors, 
+                                  labels = globals$algo_labels, 
+                                  label_in_plot = TRUE, 
+                                  txt_size = 2.5, 
+                                  txt_offset = 0.1, 
+                                  txt_x = 0.4, 
+                                  txt_y = 0) {
+    
+    ## AUC values will be shown in the plot legends
+    ## numbers of cases and events are presented in the plot subtitle
+    
+    ## plot metadata: titles and labels --------
+    
+    meta_tbl <- roc_obj$stats %>% 
+      mutate(algo_lab = labels[as.character(algorithm)], 
+             algo_lab = paste(algo_lab, signif(auc, 2), sep = ': '), 
+             n_events = floor((1 - survival_rate) * n_total))
+    
+    scale_labels <- set_names(meta_tbl$algo_lab, 
+                              meta_tbl$algorithm)
+    
+    meta_tbl <- meta_tbl %>% 
+      filter(n_total == min(n_total))
+    
+    n_total <- meta_tbl$n_total[[1]]
+    n_events <- meta_tbl$n_events[[1]]
+    
+    plot_subtitle <- paste0('total: n = ', n_total, 
+                            ', events: n = ', n_events)
+    
+    time_point <- meta_tbl$predict_time[[1]]
+    
+    plot_title <- paste0(plot_title_prefix, ', ', time_point, ' months')
+    
+    if(!is.null(plot_title_suffix)) {
+      
+      plot_title <- paste(plot_title, plot_title_suffix, sep = ', ')
+      
+    }
+    
+    ## ROC plotting -------
+    
+    if(!is.factor(roc_obj$cut$algorithm)) {
+      
+      roc_obj$cut$algorithm <- 
+        factor(roc_obj$cut$algorithm, 
+               unique(roc_obj$cut$algorithm))
+      
+    }
+    
+    roc_plot <- roc_obj$cuts %>% 
+      ggplot(aes(x = FP, 
+                 y = TP, 
+                 color = algorithm)) + 
+      geom_abline(slope = 1, 
+                  intercept = 0, 
+                  linetype = 'dashed') + 
+      geom_path() + 
+      scale_color_manual(values = palette, 
+                         labels = scale_labels, 
+                         name = '') + 
+      globals$common_theme + 
+      labs(title = plot_title, 
+           subtitle = plot_subtitle, 
+           x = 'FP fraction', 
+           y = 'TP fraction')
+    
+    if(!label_in_plot) return(roc_plot)
+    
+    ## appending with the algorithm labels with AUC values ------
+    
+    levs <- rev(levels(roc_obj$cut$algorithm))
+    
+    txt_labels <- scale_labels[levs]
+    colors <- palette[levs]
+    
+    y_pos <- txt_y + (0:(length(levs) - 1)) * txt_offset
+    
+    for(i in seq_along(levs)) {
+      
+      roc_plot <- roc_plot + 
+        annotate('text', 
+                 label = txt_labels[[i]], 
+                 x = txt_x, 
+                 y = y_pos[[i]], 
+                 color = colors[[i]], 
+                 size = txt_size, 
+                 hjust = 0, 
+                 vjust = 0)
+      
+    }
+    
+    roc_plot
+    
+  }
   
 # Markdown functions ------
 

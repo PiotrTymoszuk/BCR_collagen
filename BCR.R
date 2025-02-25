@@ -18,6 +18,7 @@
   library(survminer)
   library(coxExtensions)
   library(compareC)
+  library(survivalROC)
 
   library(furrr)
   library(soucer)
@@ -79,9 +80,12 @@
                          'with clinical predictors'))) %>% 
     pwalk(access_cache)
   
-  ## plots of the model evaluation 
+  ## summary statistics, 
+  ## ROC for selected, clinically relevant survival time points
+  ## plots of the model evaluation and comparison of model types
   
   c('./BCR scripts/summary.R', 
+    './/BCR scripts/roc.R', 
     './BCR scripts/plots.R', 
     './BCR scripts/clinical_plots.R', 
     './BCR scripts/cohort.R') %>% 

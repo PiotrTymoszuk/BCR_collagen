@@ -101,15 +101,16 @@ Machine learning models of BCR-free survival were constructed for the following 
 (3) pathological tumor stage, ISUP grade, ComBat-adjusted $log_2$ _KLK3_ mRNA levels, as well as the first- and second-order terms of ComBat-adjusted $log_2$ expression levels of the collagen-related transcripts. 
 The models were trained in the pooled GEO cohort with six algorithms (RIDGE regularized Cox proportional hazard regression, Elastic Net regularized Cox proportional hazard regression, LASSO regularized Cox proportional hazard regression, Support Vector Machines [SVM], Random Forest, and Gradient Boosted Machines [GBM]) [@Simon2011; @Tibshirani1996; @Zou2005; @Friedman2010; @Fouodo2018; @Weston1998; @Breiman2001; @Ishwaran2008; @Friedman2001; @Greenwell2022; @Friedman2002]. 
 Performance of the models was evaluated by comparison of the predicted and actual BCR-free survival in the pooled GEO training cohort, and TCGA and DKFZ validation collectives with Harrell's concordance index and Integrated Brier Scores (__Supplementary Tables S7__ - __S8__). 
-Additionally, BCR-free survival in patients stratified by tertiles of predictor scores returned by the machine learning models was explored with Kaplan-Meier plots and Peto-Peto tests. 
-Finally, confidence and calibration of the models was assessed by plots of Brier Scores for unique follow-up times. 
+BCR-free survival in patients stratified by tertiles of predictor scores returned by the machine learning models was explored with Kaplan-Meier plots and Peto-Peto tests. 
+Additionally, confidence and calibration of the models was assessed by plots of Brier Scores for unique follow-up times. 
+Finally, ability to predict BCR at one, two, three, and five years after diagnosis was assessed by receiver-operating characteristic (ROC) [@Heagerty2000].
 
 ## Multi-parameter modeling of overall survival
 
 Overall survival of PCA patients was modeled in the GSE16560 watchful waiting cohort [@Sboner2010]. 
 First- and second-order terms of ComBat-adjusted $log_2$-transformed expression levels of the collagen-related genes served as explanatory factors. 
 Machine learning models using the algorithms outlined above for the BCR-free survival were trained in a training subset of the GSE16560 cohort, and validated in the test subset. 
-Performance of the models of overall survival was evaluated in the training and test subsets of the GSE16560 cohort as described above for BCR-free survival (__Supplementary Tables S9__ - __S10__).
+Performance of the models of overall survival was evaluated in the training and test subsets of the GSE16560 cohort as described above for BCR-free survival (__Supplementary Tables S10__ - __S11__).
 
 ## Data and code availability
 

@@ -73,9 +73,9 @@
         training = test, 
         test = NA)
 
-# Score tertiles and tests for differences between the score tertiles -------
+# Normalized predictor scores, score tertiles and tests for differences between the score tertiles -------
   
-  insert_msg('Tertiles and tertile tests')
+  insert_msg('Normalized predictor scores, tertiles and tertile tests')
   
   ## this data is available only for the Cox-like models, SVM, and GBM
   ## but not for the Random Forests
@@ -107,8 +107,22 @@
         any_of(c('collagen_score', 
                  'svm_score', 
                  'clinic_score', 
-                 'gbm_score')))
+                 'gbm_score'))) %>% 
+    map(map, 
+        set_names, 
+        c('sample_id', 
+          'scaled_rfs_months', 
+          'relapse', 
+          'score_cuts', 
+          'predictor_score'))
   
+  ## normalized predictor scores (Z-scores)
+
+  surv_summary$tertile_data <- surv_summary$tertile_data %>% 
+    map(map, 
+        mutate, 
+        z_score = zScores(predictor_score))
+    
   ## tertile N numbers: total and events
   
   surv_summary$tertile_n <- surv_summary$tertile_data %>% 
@@ -145,18 +159,22 @@
   
   insert_msg('Comparison of C-indexes, GBM models')
   
-  ## with the one-show non-parameteric test proposed by Kang 2015
+  ## with the one-show non-parametric test proposed by Kang 2015
   ## and implemented by compareC package
   
   ## predictor scores 
   
   surv_summary$c_data <- 
     surv_summary$tertile_data[c("gbm_clinic", "gbm_combi")] %>% 
-    map(map, select, -score_cuts) %>% 
+    map(map, select, -score_cuts, -z_score) %>% 
     transpose %>% 
     map(reduce, 
         left_join, 
-        by = c('sample_id', 'scaled_rfs_months', 'relapse'))
+        by = c('sample_id', 'scaled_rfs_months', 'relapse')) %>% 
+    map(set_names, 
+        c('sample_id', 
+          'scaled_rfs_months', 'relapse', 
+          'clinic_score', 'gbm_score'))
   
   ## testing 
   
@@ -169,11 +187,47 @@
     map(mutate, 
         c_index = 1 - est.c)
   
+# Inference statistics for the normalized predictor scores --------
+  
+  insert_msg('Inference stats for normalized predictor scores')
+
+  ## univariable Cox models
+  
+  for(i in names(surv_summary$tertile_data)) {
+    
+    surv_summary$z_cox_models[[i]] <- surv_summary$tertile_data[[i]] %>% 
+      map(~call2('coxph', 
+                 formula = Surv(scaled_rfs_months, relapse) ~ z_score, 
+                 data = .x, 
+                 x = TRUE, 
+                 y = TRUE)) %>% 
+      map(eval) %>% 
+      map2(surv_summary$tertile_data[[i]], as_coxex)
+    
+  }
+  
+  ## the PH assumption is already checked: see the model specific scripts
+  ## focusing just on HR and its 95% confidence intervals
+  
+  surv_summary$z_inference <- surv_summary$z_cox_models %>% 
+    map(map, summary, 'inference') %>% 
+    map(compress, names_to = 'cohort') %>% 
+    compress(names_to = 'algorithm')
+  
+  ## computation of HRs with 95% confidence intervals
+  
+  surv_summary$z_inference[, c('hr', 'hr_se', 'hr_lower', 'hr_upper')] <- 
+    surv_summary$z_inference[, c("estimate", "se", "lower_ci", "upper_ci")] %>% 
+    map_dfc(exp)
+  
 # END ------
   
-  surv_summary$tertile_events <- NULL
-  surv_summary$tertile_data <- NULL
+  rm(i)
   
+  surv_summary$tertile_events <- NULL
+  surv_summary$c_data <- NULL
+  surv_summary$z_cox_models <- NULL
+
   surv_summary <- compact(surv_summary)
   
   insert_tail()
