@@ -95,13 +95,13 @@ Figure and table objects in the _rmarkdown_ documents were managed with [_figur_
 
 Transcriptome cohorts were selected from studies deposited at cBioportal and Gene Expression Omnibus (GEO) with the following criteria: biochemical relapse and biochemical relapse-free survival or death and overall survival information, and expression data for `r nrow(globals$genes_interest)` collagen-related genes investigated in our previous collagen project [@Heidegger2024].
 
-The TCGA prostate cancer data set [@Liu2018; @Abeshouse2015] and DKFZ data set [@Gerhauser2018] consisted of normalized RNA sequencing data for `r tcga$expression %>% filter(tissue_type == 'tumor') %>% nrow` and `r dkfz$expression %>% filter(tissue_type == 'tumor') %>% nrow` cancer samples, respectively, with accompanying clinical information and were obtained from the cBioportal repository with in-house-developed R scripts. 
+The [TCGA](https://www.cbioportal.org/study/summary?id=prad_tcga_pan_can_atlas_2018) prostate cancer data set [@Liu2018; @Abeshouse2015] and [DKFZ](https://www.cbioportal.org/study/summary?id=prostate_dkfz_2018) data set [@Gerhauser2018] consisted of normalized RNA sequencing data for `r tcga$expression %>% filter(tissue_type == 'tumor') %>% nrow` and `r dkfz$expression %>% filter(tissue_type == 'tumor') %>% nrow` cancer samples, respectively, with accompanying clinical information and were obtained from the cBioportal repository with in-house-developed R scripts. 
 
-The GSE16560 [@Sboner2010] (microarray, Human 6k Transcriptionally Informative Gene Panel for DASL, n = `r gse16560$expression %>% filter(tissue_type == 'tumor') %>% nrow` cancer samples), 
-GSE54460 [@Long2014] (RNA sequencing, n = `r gse54460$expression %>% filter(tissue_type == 'tumor') %>% nrow` cancer samples), 
-GSE70768 [@Ross-Adams2015] (Illumina HumanHT-12 V4.0 expression beadchip microarray, n = `r gse70768$expression %>% filter(tissue_type == 'tumor') %>% nrow`), 
-GSE70769 [@Ross-Adams2015] (Illumina HumanHT-12 V4.0 expression beadchip microarray, n = `r gse70769$expression %>% filter(tissue_type == 'tumor') %>% nrow`), and 
-GSE220095 [@Schimmelpfennig2023] (RNA sequencing, n = `r gse220095$expression %>% filter(tissue_type == 'tumor') %>% nrow`) data sets with normalized whole-transcriptome and basic clinical information were fetched from GEO with the `getGEO()` function from the _GEOquery_ package. 
+The [GSE16560](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE16560) [@Sboner2010] (microarray, Human 6k Transcriptionally Informative Gene Panel for DASL, n = `r gse16560$expression %>% filter(tissue_type == 'tumor') %>% nrow` cancer samples), 
+GSE54460(https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE54460) [@Long2014] (RNA sequencing, n = `r gse54460$expression %>% filter(tissue_type == 'tumor') %>% nrow` cancer samples), 
+[GSE70768](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE70768) [@Ross-Adams2015] (Illumina HumanHT-12 V4.0 expression beadchip microarray, n = `r gse70768$expression %>% filter(tissue_type == 'tumor') %>% nrow`), 
+[GSE70769](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE70769) [@Ross-Adams2015] (Illumina HumanHT-12 V4.0 expression beadchip microarray, n = `r gse70769$expression %>% filter(tissue_type == 'tumor') %>% nrow`), and 
+[GSE220095](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE220095) [@Schimmelpfennig2023] (RNA sequencing, n = `r gse220095$expression %>% filter(tissue_type == 'tumor') %>% nrow`) data sets with normalized whole-transcriptome and basic clinical information were fetched from GEO with the `getGEO()` function from the _GEOquery_ package. 
 
 Whole transcriptome expression levels were transformed with the $log_2(expression)$ and $log_2(count + 1)$ function for, respectively, microarray and RNA sequencing data sets, and subjected to adjustment for batch cohort effects with the ComBat algorithm [@Leek2012] (function `multi_process()`, package [_htGLMNET_](https://github.com/PiotrTymoszuk/htGLMNET)). 
 Subsequently, the ComBat-adjusted log2-transformed expression data and clinical information from `r globals$study_labels[geo_pool$studies] %>% collapse_and` data sets was merged into a 'pooled GEO cohort'. 
@@ -162,7 +162,7 @@ Hazard ratios (HR) for BCR risk in the high as compared with low expressors with
 The inference p values ($p(HR = 1)$), were corrected for multiple testing with the FDR method. 
 Accuracy of the model was assessed by 
 Harrell's concordance index [@Harrell1996] (high values are characteristic for high concordance between the predicted and observed BCR risk),  
-overall model calibration and confidence of predictions was gauged by Integrated Brier Score (low values are expected for well calibrated and highly confident models) [@Graf1999]. 
+model calibration and confidence of predictions was gauged by Integrated Brier Score (low values are expected for well calibrated and highly confident models) [@Graf1999]. 
 The inference and model fit metrics were computed by calling `summary()` method from [_coxExtensions_](https://github.com/PiotrTymoszuk/coxExtensions) for the model objects. 
 Genes found to be associated with unfavorable (pFDR < 0.05, HR > 1) or favorable BCR prognosis (pFDR < 0.05, HR < 1) in all three cohorts were considered as standalone markers of BCR prognosis listed in __Supplementary Table S\@ref(tab:tab-uni-bcr)__. 
 
@@ -348,7 +348,7 @@ suppl_tab$uni_bcr %>%
            part = 'header', 
            ref_symbols = 'b') %>% 
   footnote(1, 10, 
-           value = as_paragraph('IBS: Integrated Brier Score, a metric of overall model calibration. Low values are expected for a well calibrate model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
+           value = as_paragraph('IBS: Integrated Brier Score, a metric of model calibration. Low values are expected for a well calibrate model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
            part = 'header', 
            ref_symbols = 'c') %>% 
   theme_vanilla
@@ -409,7 +409,7 @@ flextable::flextable(suppl_tab$bcr_eval) %>%
            part = 'header', 
            ref_symbols = 'b') %>% 
   footnote(1, 5, 
-           value = as_paragraph('IBS: Integrated Brier Score, a metric of overall model calibration. Low values are expected for a well calibrated model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
+           value = as_paragraph('IBS: Integrated Brier Score, a metric of model calibration. Low values are expected for a well calibrated model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
            part = 'header', 
            ref_symbols = 'c') %>% 
   theme_vanilla
@@ -442,7 +442,7 @@ flextable::flextable(suppl_tab$os_eval) %>%
            part = 'header', 
            ref_symbols = 'b') %>% 
   footnote(1, 4, 
-           value = as_paragraph('IBS: Integrated Brier Score, a metric of overall model calibration. Low values are expected for a well calibrate model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
+           value = as_paragraph('IBS: Integrated Brier Score, a metric of model calibration. Low values are expected for a well calibrate model. Intergrated Brier score = 0.25 is expected for random predictions.'), 
            part = 'header', 
            ref_symbols = 'c') %>% 
   theme_vanilla
@@ -534,7 +534,7 @@ __Figure \@ref(fig:fig-clinic). Modeling of BCR-free survival by GBM algorithm w
 
 _Three Gradient Boosted Machines (GBM) models of biochemical relapse (BCR) free survival were trained in the pooled GEO cohort: a model with clinical predictors (age, pathological tumor stage, ISUP grade, and tumor tissue expression of KLK3 transcript coding for PSA protein), a model with ComBat-adjusted $log_2$ expression levels of the collagen-related transcripts, and a model with the clinical and transcriptomic predictors. Performance of the GBM models was evaluated in the pooled GEO training collective (total: n = `r nrow(surv_clin$score_tbl$geo_pool)`, BCR: n = `r sum(surv_clin$score_tbl$geo_pool$relapse)`), and TCGA (total: n = `r nrow(surv_clin$score_tbl$tcga)`, BCR: n = `r sum(surv_clin$score_tbl$tcga$relapse)`) and DKFZ (total: n = `r nrow(surv_clin$score_tbl$dkfz)`, BCR: n = `r sum(surv_clin$score_tbl$dkfz$relapse)`) validation cohorts._
 
-_(A) Numeric metrics of survival model performance, Harrell's concordance index (C-index, measure of model accuracy) and Integrated Brier Score (IBS, measure of overall calibration, low values are characteristic for well calibrated models), are presented in a dot plot. Each point represents a single GBM model, point color codes for the model type. Models in the same cohort are connected with lines. Note the substantial improvement of the GBM model accuracy and calibration upon inclusion of the collagen-related transcript expression levels in the explanatory variable set in the pooled GEO and DKFZ cohorts._
+_(A) Numeric metrics of survival model performance, Harrell's concordance index (C-index, measure of model accuracy) and Integrated Brier Score (IBS, measure of calibration, low values are characteristic for well calibrated models), are presented in a dot plot. Each point represents a single GBM model, point color codes for the model type. Models in the same cohort are connected with lines. Note the substantial improvement of the GBM model accuracy and calibration upon inclusion of the collagen-related transcript expression levels in the explanatory variable set in the pooled GEO and DKFZ cohorts._
 
 _(B) Brier Scores for unique survival time points for the GBM models in the pooled GEO, TCGA, and DKFZ cohort. Low Brier Scores at a particular time point indicate accurate and confident prediction of the BCR risk. Note: gray lines represent random survival predictions by a null model._
 
@@ -567,7 +567,7 @@ _Overall survival in prostate cancer (PCA) was modeled by multi-parameter machin
 _The models were trained in the training subset of the GSE16560 cohort with six machine learning algorithms (RIDGE Cox regression, Elastic Net Cox regression, LASSO Cox regression, survival Support Vector Machines [SVM], survival Random Forest, and survival Gradient Boosted Machines [GBM])._
 _Performance of the models was evaluated in the training (total patients: n = `r nrow(ridge_os$score_tbl$training)`, deaths: n = `r sum(ridge_os$score_tbl$training$death)`) and test (total patients: n = `r nrow(ridge_os$score_tbl$test)`, deaths: n = `r sum(ridge_os$score_tbl$test$death)`) subsets of the GSE16560 cohort._ 
 
-_(A) Metrics of performance of the survival models, Harrell's concordance index (C-index, measure of model accuracy) and Integrated Brier Score (IBS, measure of overall model calibration, low values are characteristic for good calibration), are presented in dot plots. Dashed lines represent C-index and IBS values expected for random death risk prediction. Note the superior accuracy and calibration of the GBM model in the validation collectives._
+_(A) Metrics of performance of the survival models, Harrell's concordance index (C-index, measure of model accuracy) and Integrated Brier Score (IBS, measure of model calibration, low values are characteristic for good calibration), are presented in dot plots. Dashed lines represent C-index and IBS values expected for random death risk prediction. Note the superior accuracy and calibration of the GBM model in the validation collectives._
 
 _(B) Brier Scores for unique survival time points for the best performing RIDGE Cox model. Low Brier Scores at a particular time point indicate accurate and confident prediction of the BCR risk. Note: gray lines represent random survival predictions by a null model._
 

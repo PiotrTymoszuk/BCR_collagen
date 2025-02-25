@@ -29,6 +29,23 @@
     pmap(mdlink) %>%
     set_names(proj_links$obj_name)
   
+# links to the data sets --------
+  
+  data_links <- 
+    c(TCGA = 'https://www.cbioportal.org/study/summary?id=prad_tcga_pan_can_atlas_2018', 
+      DKFZ = 'https://www.cbioportal.org/study/summary?id=prostate_dkfz_2018', 
+      GSE16560 = 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE16560', 
+      GSE54460 = 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE54460', 
+      GSE70768 = 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE70768', 
+      GSE70769 = 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE70769', 
+      GSE220095 = 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE220095') %>% 
+    tibble(ref_name = names(.), 
+           x = .)
+  
+  data_links <- data_links %>%
+    pmap(mdlink) %>% 
+    set_names(data_links$ref_name)
+  
 # reading the bibliography -------
   
   insert_msg('Rending the bibliography')
