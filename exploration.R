@@ -56,12 +56,11 @@
   insert_msg('Exploration scripts')
   
   ## general distribution stats
-  ## co-expression analysis and co-expression networks
+  ## co-expression analysis
   
   c('./exploration scripts/cohorts.R', 
     './exploration scripts/distribution.R', 
-    './exploration scripts/coexpression.R', 
-    './exploration scripts/networks.R') %>% 
+    './exploration scripts/coexpression.R') %>% 
     source_all(message = TRUE, crash = TRUE)
   
   ## characteristic of the pooled GEO cohort; 

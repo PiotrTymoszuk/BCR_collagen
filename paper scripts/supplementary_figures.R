@@ -10,23 +10,38 @@
   
   insert_msg('Co-expression of the collagen-related genes')
   
+  ## functional classification and association with 
+  ## BCR risk in univariable survival analysis
+  
   suppl_fig$nets <- 
-    map2(net$graph_plots$gene_group[c("geo_pool", "tcga", "dkfz")], 
-         c("geo_pool", "tcga", "dkfz"), 
-         ~.x + 
-           labs(title = globals$study_labels[.y]) + 
-           theme(legend.position = 'none')) %>% 
-    c(list(get_legend(net$graph_plots$gene_group[[1]]))) %>% 
-    plot_grid(plotlist = ., 
+    list(gene_group = net$graph_plots$gene_group[c("geo_pool", "tcga", "dkfz")], 
+         bcr_risk = net$graph_plots$bcr_risk[c("geo_pool", "tcga", "dkfz")]) %>% 
+    transpose %>% 
+    unlist(recursive = FALSE) %>% 
+    map(~.x + 
+          theme(legend.position = 'none', 
+                plot.subtitle = element_blank())) %>%
+    plot_grid(plotlist = .,
               ncol = 2, 
               align = 'hv', 
-              axis = 'tblr') %>% 
+              axis = 'tblr',
+              labels = c('A', '', 
+                         'B', '', 
+                         'C', ''), 
+              label_size = 10) %>% 
+    plot_grid(plot_grid(get_legend(net$graph_plots$gene_group$geo_pool + 
+                                     theme(legend.position = 'bottom')), 
+                        get_legend(net$graph_plots$bcr_risk$geo_pool + 
+                                     theme(legend.position = 'bottom')), 
+                        nrow = 2), 
+              nrow = 2, 
+              rel_heights = c(0.9, 0.1)) %>% 
     as_figure(label = 'co_expression_networks_collagen_related_genes', 
               ref_name = 'nets', 
               caption = paste('Co-expression networks of the collagen-related', 
                               'transcripts in PCA tissue.'), 
               w = 180, 
-              h = 180)
+              h = 230)
   
 # Co-expression networks, vertex importance ------
   

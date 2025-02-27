@@ -487,7 +487,8 @@ suppl_fig$nets$plot
 __Supplementary Figure S\@ref(fig:fig-nets). Co-expression networks of the collagen-related transcripts in PCA tissue.__ 
 
 _Co-expression networks of the collagen-related transcripts in PCA were constructed in the pooled GEO (cancer samples: n = `r nrow(net$data$geo_pool)`), TCGA (n = `r nrow(net$data$tcga)`), and DKFZ cohort (n = `r nrow(net$data$dkfz)`). The network edges were defined by pairwise correlations between ComBat-adjusted transcript levels in the cancer tissue with Spearman's $\rho \geq$ 0.5. Isolated vertices, i.e. transcripts without correlation partners, were removed._ 
-_The co-expression networks were visualized with Kamada-Kawai algorithm. Each point represents a single transcript in the network; point color codes for functional classification of the transcript. Edges, i.e. correlations of expression levels with $\rho \geq$ 0.5, are depicted as gray lines. Numbers of transcripts (vertices) and correlations with $\rho \geq$ 0.5 (edges) are displayed in the plot captions._
+_The co-expression networks were visualized with Kamada-Kawai algorithm. Each point represents a single transcript in the network. Point color codes for functional classification of the transcript and BCR risk association status shared by all three cohorts in unavailable survival analysis. Edges, i.e. correlations of expression levels with $\rho \geq$ 0.5, are depicted as gray lines._ 
+_Network dimensions, pooled GEO: `r dimensions(net$graph_obj$geo_pool)['vertices']` vertices and `r dimensions(net$graph_obj$geo_pool)['edges']` edges; TCGA:  `r dimensions(net$graph_obj$tcga)['vertices']` vertices and `r dimensions(net$graph_obj$tcga)['edges']` edges; DKFZ: `r dimensions(net$graph_obj$dkfz)['vertices']` vertices and `r dimensions(net$graph_obj$dkfz)['edges']` edges._
 
 \newpage
 

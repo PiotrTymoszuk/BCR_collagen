@@ -15,6 +15,10 @@
       'BCR.R', 
       'OS.R', 
       
+      ## co-expression network analysis
+      
+      'networks.R', 
+      
       ## manuscript parts
       'paper.R'
       
